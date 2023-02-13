@@ -1,0 +1,10 @@
+/users/Prajwal/abd-psr/src/helloworld/cmake/build/CMakeFiles/hw_grpc_proto.dir
+/users/Prajwal/abd-psr/src/helloworld/cmake/build/CMakeFiles/greeter_client.dir
+/users/Prajwal/abd-psr/src/helloworld/cmake/build/CMakeFiles/greeter_server.dir
+/users/Prajwal/abd-psr/src/helloworld/cmake/build/CMakeFiles/greeter_callback_client.dir
+/users/Prajwal/abd-psr/src/helloworld/cmake/build/CMakeFiles/greeter_callback_server.dir
+/users/Prajwal/abd-psr/src/helloworld/cmake/build/CMakeFiles/greeter_async_client.dir
+/users/Prajwal/abd-psr/src/helloworld/cmake/build/CMakeFiles/greeter_async_client2.dir
+/users/Prajwal/abd-psr/src/helloworld/cmake/build/CMakeFiles/greeter_async_server.dir
+/users/Prajwal/abd-psr/src/helloworld/cmake/build/CMakeFiles/edit_cache.dir
+/users/Prajwal/abd-psr/src/helloworld/cmake/build/CMakeFiles/rebuild_cache.dir
