@@ -1,0 +1,24 @@
+syntax = "proto3";
+
+option java_multiple_files = true;
+option java_package = "io.grpc.examples.abd_algo";
+option java_outer_classname = "ABDAlgoProto";
+option objc_class_prefix = "ABD";
+
+package abd_algo;
+
+// ABD Algorithm service definition.
+service ABDImpl {
+  // Responds to a read request.
+  rpc Read (ReadArg) returns (ReadRet) {}
+}
+
+// The read message containing the key.
+message ReadArg {
+  string key = 1;
+}
+
+// The return proto for the read message.
+message ReadRet {
+  string val = 1;
+}

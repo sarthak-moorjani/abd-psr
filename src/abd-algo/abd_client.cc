@@ -5,10 +5,10 @@
 
 #include "abd_client.h"
 
-#include "helloworld.grpc.pb.h"
+#include "abd_algo.grpc.pb.h"
 
 // temp
-using helloworld::Greeter;
+using abd_algo::ABDImpl;
 
 using grpc::Channel;
 using grpc::ClientContext;
@@ -20,7 +20,7 @@ using namespace std;
 
 ABDClient::ABDClient(std::shared_ptr<Channel> channel,
                          vector<string> target_strs)
-                         : stub_(Greeter::NewStub(channel)) {
+                         : stub_(ABDImpl::NewStub(channel)) {
 }
 
 //-----------------------------------------------------------------------------
@@ -90,7 +90,7 @@ int main(int argc, char** argv) {
   } else {
     target_str = "localhost:50051";
   }
-  ABDClient greeter(
+  ABDClient abd_client(
       grpc::CreateChannel(target_str, grpc::InsecureChannelCredentials()));
 
   return 0;

@@ -14,11 +14,11 @@
 
 #include <grpcpp/grpcpp.h>
 
-#include "helloworld.grpc.pb.h"
+#include "abd_algo.grpc.pb.h"
 
 class ABDClient {
   private:
-    std::unique_ptr<helloworld::Greeter::Stub> stub_;
+    std::unique_ptr<abd_algo::ABDImpl::Stub> stub_;
 
     // Since clients are closed loop, there would be only one outstanding
     // request at every point in time. Therefore, we can have a status

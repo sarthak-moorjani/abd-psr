@@ -24,34 +24,35 @@ project(ABD-ALGO C CXX)
 include(../cmake/common.cmake)
 
 # Proto file
-get_filename_component(hw_proto "../protos/helloworld.proto" ABSOLUTE)
-get_filename_component(hw_proto_path "${hw_proto}" PATH)
+get_filename_component(abd_proto "../protos/abd_algo.proto" ABSOLUTE)
+get_filename_component(abd_proto_path "${abd_proto}" PATH)
 
 # Generated sources
-set(hw_proto_srcs "${CMAKE_CURRENT_BINARY_DIR}/helloworld.pb.cc")
-set(hw_proto_hdrs "${CMAKE_CURRENT_BINARY_DIR}/helloworld.pb.h")
-set(hw_grpc_srcs "${CMAKE_CURRENT_BINARY_DIR}/helloworld.grpc.pb.cc")
-set(hw_grpc_hdrs "${CMAKE_CURRENT_BINARY_DIR}/helloworld.grpc.pb.h")
+set(abd_algo_srcs "${CMAKE_CURRENT_BINARY_DIR}/abd_algo.pb.cc")
+set(abd_algo_hdrs "${CMAKE_CURRENT_BINARY_DIR}/abd_algo.pb.h")
+set(abd_grpc_srcs "${CMAKE_CURRENT_BINARY_DIR}/abd_algo.grpc.pb.cc")
+set(abd_grpc_hdrs "${CMAKE_CURRENT_BINARY_DIR}/abd_algo.grpc.pb.h")
+
 add_custom_command(
-      OUTPUT "${hw_proto_srcs}" "${hw_proto_hdrs}" "${hw_grpc_srcs}" "${hw_grpc_hdrs}"
+      OUTPUT "${abd_algo_srcs}" "${abd_algo_hdrs}" "${abd_grpc_srcs}" "${abd_grpc_hdrs}"
       COMMAND ${_PROTOBUF_PROTOC}
       ARGS --grpc_out "${CMAKE_CURRENT_BINARY_DIR}"
         --cpp_out "${CMAKE_CURRENT_BINARY_DIR}"
-        -I "${hw_proto_path}"
+        -I "${abd_proto_path}"
         --plugin=protoc-gen-grpc="${_GRPC_CPP_PLUGIN_EXECUTABLE}"
-        "${hw_proto}"
-      DEPENDS "${hw_proto}")
+        "${abd_proto}"
+      DEPENDS "${abd_proto}")
 
 # Include generated *.pb.h files
 include_directories("${CMAKE_CURRENT_BINARY_DIR}")
 
 # hw_grpc_proto
-add_library(hw_grpc_proto
-  ${hw_grpc_srcs}
-  ${hw_grpc_hdrs}
-  ${hw_proto_srcs}
-  ${hw_proto_hdrs})
-target_link_libraries(hw_grpc_proto
+add_library(abd_algo_proto
+  ${abd_algo_srcs}
+  ${abd_algo_hdrs}
+  ${abd_grpc_srcs}
+  ${abd_grpc_hdrs})
+target_link_libraries(abd_algo_proto
   ${_REFLECTION}
   ${_GRPC_GRPCPP}
   ${_PROTOBUF_LIBPROTOBUF})
@@ -61,7 +62,7 @@ foreach(_target
   abd_client abd_replica)
   add_executable(${_target} "${_target}.cc")
   target_link_libraries(${_target}
-    hw_grpc_proto
+    abd_algo_proto
     ${_REFLECTION}
     ${_GRPC_GRPCPP}
     ${_PROTOBUF_LIBPROTOBUF})

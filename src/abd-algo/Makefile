@@ -40,10 +40,10 @@ vpath %.proto $(PROTOS_PATH)
 
 all: system-check abd_client abd_replica
 
-abd_client: helloworld.pb.o helloworld.grpc.pb.o abd_client.o
+abd_client: abd_algo.pb.o abd_algo.grpc.pb.o abd_client.o
 	$(CXX) $^ $(LDFLAGS) -o $@
 
-abd_replica: helloworld.pb.o helloworld.grpc.pb.o abd_replica.o
+abd_replica: abd_algo.pb.o abd_algo.grpc.pb.o abd_replica.o
 	$(CXX) $^ $(LDFLAGS) -o $@
 
 .PRECIOUS: %.grpc.pb.cc

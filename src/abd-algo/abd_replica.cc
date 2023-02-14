@@ -21,25 +21,26 @@
 #include <grpcpp/ext/proto_server_reflection_plugin.h>
 #include <grpcpp/health_check_service_interface.h>
 
-#include "helloworld.grpc.pb.h"
+#include "abd_algo.grpc.pb.h"
 
 using grpc::Server;
 using grpc::ServerBuilder;
 using grpc::ServerContext;
 using grpc::Status;
-using helloworld::Greeter;
-using helloworld::HelloReply;
-using helloworld::HelloRequest;
+
+using abd_algo::ABDImpl;
+using abd_algo::ReadArg;
+using abd_algo::ReadRet;
 
 //-----------------------------------------------------------------------------
 
 // Logic and data behind the server's behavior.
-Status ABDReplica::SayHello(ServerContext* context,
-                            const HelloRequest* request,
-                            HelloReply* reply) {
+Status ABDReplica::Read(ServerContext* context,
+                        const ReadArg* request,
+                        ReadRet* reply) {
 
   std::string prefix("Hello ");
-  reply->set_message(prefix + request->name());
+  reply->set_val(prefix + request->key());
   return Status::OK;
 }
 
