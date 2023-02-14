@@ -29,15 +29,15 @@ using grpc::ServerContext;
 using grpc::Status;
 
 using abd_algo::ABDImpl;
-using abd_algo::ReadArg;
-using abd_algo::ReadRet;
+using abd_algo::ReadGetArg;
+using abd_algo::ReadGetRet;
 
 //-----------------------------------------------------------------------------
 
 // Logic and data behind the server's behavior.
-Status ABDReplica::Read(ServerContext* context,
-                        const ReadArg* request,
-                        ReadRet* reply) {
+Status ABDReplica::ReadGet(ServerContext* context,
+                           const ReadGetArg* request,
+                           ReadGetRet* reply) {
 
   std::string prefix("Hello ");
   reply->set_val(prefix + request->key());

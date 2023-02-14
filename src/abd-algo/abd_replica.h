@@ -18,9 +18,9 @@
 class ABDReplica final : public abd_algo::ABDImpl::Service {
   public:
     // The RPC methods definition will come here.
-    grpc::Status Read(grpc::ServerContext* context,
-                      const abd_algo::ReadArg* request,
-                      abd_algo::ReadRet* reply) override;
+    grpc::Status ReadGet(grpc::ServerContext* context,
+                         const abd_algo::ReadGetArg* request,
+                         abd_algo::ReadGetRet* reply) override;
 };
 
 #endif
