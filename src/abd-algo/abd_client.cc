@@ -320,7 +320,7 @@ int main(int argc, char** argv) {
   } else {
     target_str = "localhost:50051";
   }
-  ABDClient abd_client({"127.0.0.1:50052"});
+  ABDClient abd_client({"10.10.1.1:50052","10.10.1.2:50052","10.10.1.3:50052"});
   abd_client.Write("2","2");
   cout << "Read " << abd_client.Read("2") << endl;
   abd_client.Write("2","8");
