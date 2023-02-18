@@ -58,9 +58,9 @@ message WriteGetArg {
 message WriteGetRet {
   optional string val = 1;
 
-  optional int32 timestamp = 2;
+  optional int64 timestamp = 2;
 
-  optional string client_id = 3;
+  optional int32 client_id = 3;
 }
 
 // The write message for the set phase.

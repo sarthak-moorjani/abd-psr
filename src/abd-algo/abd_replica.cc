@@ -22,6 +22,8 @@
 #include <grpcpp/health_check_service_interface.h>
 
 #include "abd_algo.grpc.pb.h"
+#include <bits/stdc++.h>
+#include <mutex> 
 
 using grpc::Server;
 using grpc::ServerBuilder;
@@ -31,23 +33,80 @@ using grpc::Status;
 using abd_algo::ABDImpl;
 using abd_algo::ReadGetArg;
 using abd_algo::ReadGetRet;
+using namespace std;
 
+std::unordered_map<std::string, shared_register> kv_store;
+int client_id;
+std::mutex mtx; 
 //-----------------------------------------------------------------------------
 
 // Logic and data behind the server's behavior.
 Status ABDReplica::ReadGet(ServerContext* context,
-                           const ReadGetArg* request,
-                           ReadGetRet* reply) {
+                           const abd_algo::ReadGetArg* request,
+                            abd_algo::ReadGetRet* reply) {
 
-  std::string prefix("Hello ");
-  reply->set_val(prefix + request->key());
+  auto it = kv_store.find(request->key());
+  if(it==kv_store.end()){
+    return grpc::Status(grpc::StatusCode::NOT_FOUND, "Key not found");
+  }
+  reply->set_val(it->second.value);
+  reply->set_timestamp(it->second.ts);
   return Status::OK;
 }
 
+// Logic and data behind the server's behavior.
+Status ABDReplica::ReadSet(ServerContext* context,
+                           const abd_algo::ReadSetArg* request,
+                           abd_algo::ReadSetRet* reply) {
+  mtx.lock();
+  auto it = kv_store.find(request->key());
+  if(it==kv_store.end()){
+    return grpc::Status(grpc::StatusCode::NOT_FOUND, "Key not found");
+  }
+  if(it->second.ts<request->timestamp()){
+    
+    kv_store[request->key()].ts = request->timestamp();
+  }
+  mtx.unlock();
+  return Status::OK;
+}
+
+Status ABDReplica::WriteGet(ServerContext* context,
+                const abd_algo::WriteGetArg* request,
+                abd_algo::WriteGetRet* reply){
+  // std::cout << "Replica: Write Get" << endl;
+  std::string search_key = request->key();
+  auto it = kv_store.find(search_key);
+  //If key does not exist
+  if(it==kv_store.end()){
+    return grpc::Status(grpc::StatusCode::NOT_FOUND, "Key not found");
+  }
+
+  struct shared_register sr = it->second;
+  reply->set_val(sr.value);
+  reply->set_timestamp(sr.ts);
+  reply->set_client_id(client_id);
+  return Status::OK;
+}
+
+Status ABDReplica::WriteSet(grpc::ServerContext* context,
+                         const abd_algo::WriteSetArg* request,
+                         abd_algo::WriteSetRet* reply){
+  // std::cout << "Replica: Write Set" << endl;
+  struct shared_register reg = {
+    request->val(),
+    request->timestamp()
+  };
+  mtx.lock();
+  kv_store.insert(std::make_pair(request->key(), reg));
+  mtx.unlock();
+  // cout << kv_store.find(request->key())->second.value << endl;
+  return Status::OK;
+}
 //-----------------------------------------------------------------------------
 
 void RunServer() {
-  std::string server_address("0.0.0.0:50051");
+  std::string server_address("0.0.0.0:50052");
   ABDReplica service;
 
   grpc::EnableDefaultHealthCheckService(true);
@@ -68,7 +127,7 @@ void RunServer() {
 }
 
 int main(int argc, char** argv) {
+  client_id = std::stoi(argv[1]);  
   RunServer();
-
   return 0;
 }
