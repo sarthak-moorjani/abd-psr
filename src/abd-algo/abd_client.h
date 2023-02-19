@@ -40,7 +40,7 @@ class ABDClient {
     // grpc::ClientContext context_;
 
     // Target IPs for the servers/replicas.
-    std::vector<std::string> target_strs_;
+    std::map<std::string,std::shared_ptr<Channel>> channels_;
 
   public:
     template<typename InType, typename OutType>
@@ -57,18 +57,18 @@ class ABDClient {
     // Constructor.
     ABDClient(std::vector<std::string> target_strs =
                 std::vector<std::string> ());
-
+    
     // Read Interface for the algorithm.
     std::string Read(std::string key);
 
     // Phase 1 for the read protocol. This method returns a
     // pair of the chosen value and the largest timestamp corresponding to it.
-    std::pair<time_t, string> ReadGetPhase(std::string key);
+    std::pair<time_t, string> ReadGetPhase(std::string key, char*err);
 
     // Phase 2 for the read protocol. This method just talks
     // to the replicas to set the current value. The value returned to the
     // client will always be 'v' as set by the GetPhase of the algorithm.
-    void ReadSetPhase(std::string key, std::string value, int max_ts);
+    void ReadSetPhase(std::string key, std::string value, int max_ts, char *err);
 
     // Write Interface for the algorithm.
     void Write(std::string key, std::string value);
