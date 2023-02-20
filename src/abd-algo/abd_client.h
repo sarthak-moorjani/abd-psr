@@ -48,9 +48,9 @@ class ABDClient {
         public:
           vector<std::unique_ptr<abd_algo::ABDImpl::Stub>> stubs;
           CompletionQueue cq;
-          vector<std::unique_ptr<ClientContext>> contexts;
-          vector<std::unique_ptr<Status>> statuses;
-          vector<std::unique_ptr<OutType>> replies;
+          vector<ClientContext*> contexts;
+          vector<Status*> statuses;
+          vector<OutType*> replies;
           vector<std::unique_ptr<ClientAsyncResponseReader<OutType>>> rpcs;
     };
   

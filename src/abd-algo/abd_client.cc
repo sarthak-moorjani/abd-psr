@@ -50,57 +50,64 @@ std::pair<time_t, string> ABDClient::ReadGetPhase(std::string key, char* err) {
 
   cout << "In Read Get" << endl;
   
-  ABDClient::AsyncCall<abd_algo::ReadGetArg,abd_algo::ReadGetRet> * get_call = new ABDClient::AsyncCall<abd_algo::ReadGetArg,abd_algo::ReadGetRet>();
+  ABDClient::AsyncCall<abd_algo::ReadGetArg,abd_algo::ReadGetRet>* get_call =
+    new ABDClient::AsyncCall<abd_algo::ReadGetArg,abd_algo::ReadGetRet>();
   abd_algo::ReadGetArg request;
   request.set_key(key);
   std::map<std::string,std::shared_ptr<Channel>> :: iterator it = channels_.begin();
+  int counter = 0;
   for(it = channels_.begin();it!=channels_.end();it++){
     string replica = it->first;
     // cout << "Read get from " << replica << endl;
     std::shared_ptr<Channel> channel = it->second;
 
     const auto start_time = chrono::system_clock::now();
-    const chrono::system_clock::time_point deadline = start_time + chrono::milliseconds(5000);
+    const chrono::system_clock::time_point deadline =
+      start_time + chrono::milliseconds(5000);
 
     get_call->stubs.emplace_back(ABDImpl::NewStub(channel));
     ClientContext* context = new ClientContext();
     context->set_deadline(deadline);
     get_call->contexts.emplace_back(context);
 
-    get_call->statuses.emplace_back(new Status());                              
-    abd_algo::ReadGetRet* reply = new abd_algo::ReadGetRet();                                        
+    get_call->statuses.emplace_back(new Status());
+    abd_algo::ReadGetRet* reply = new abd_algo::ReadGetRet();
     get_call->replies.emplace_back(reply);
-    int i = std::distance(it,channels_.begin());
-    get_call->rpcs.emplace_back((get_call->stubs[i]->AsyncReadGet)(context, request, &(get_call)->cq));                                                          
-    get_call->rpcs[i]->Finish(reply, get_call->statuses[i].get(), (void*)i);                                                         
+    int i = counter;
+    get_call->rpcs.emplace_back(
+      (get_call->stubs[i]->AsyncReadGet)(context, request, &(get_call)->cq));
+    get_call->rpcs[i]->Finish(reply, get_call->statuses[i], (void*)i);
+    counter++;
   }
 
-    int num_rpcs_finished = 0;
-    int num_rpcs_finished_ok = 0;
-    int majority = channels_.size()/2 + 1;
-    bool timeOut = false;
-    std::vector<std::pair<time_t,string>>timestamps;
-    while (num_rpcs_finished < majority) {
-        void* which_backend_ptr;
-        bool ok = false;
-        // Block until the next result is available in the completion queue "cq".
-        get_call->cq.Next(&which_backend_ptr, &ok);
-        num_rpcs_finished++;
-        const size_t which_backend = size_t(which_backend_ptr);
-        const Status& status = *(get_call->statuses[which_backend].get());
+  std::atomic<int> num_rpcs_finished(0);
+  std::atomic<int> num_rpcs_finished_ok(0);
+  int majority = channels_.size()/2 + 1;
+  bool timeOut = false;
+  std::vector<std::pair<time_t,string>>timestamps;
+  while (num_rpcs_finished < majority) {
+    void* which_backend_ptr;
+    bool ok = false;
+    // Block until the next result is available in the completion queue "cq".
+    get_call->cq.Next(&which_backend_ptr, &ok);
+    num_rpcs_finished++;
+    const size_t which_backend = size_t(which_backend_ptr);
+    const Status& status = *(get_call->statuses[which_backend]);
 
-        if (status.ok()) {
-            // cout << "rpc ok" << endl;
-            timestamps.emplace_back(make_pair(get_call->replies[num_rpcs_finished_ok]->timestamp(),get_call->replies[num_rpcs_finished_ok]->val()));
-            // cout << "At read get ts = " << get_call->replies[num_rpcs_finished_ok]->timestamp() << "for key " << key << endl;
-            num_rpcs_finished_ok++;
-        } else {
-            if (status.error_code() == grpc::StatusCode::DEADLINE_EXCEEDED) {
-                cout << "rpc timed out" << endl;
-            } else if(status.error_code() == grpc::StatusCode::NOT_FOUND) {
-                cout << "read get phase - key not found. " << key << endl;
-            }
+    if (status.ok()) {
+      // cout << "rpc ok" << endl;
+      timestamps.emplace_back(make_pair(
+        get_call->replies[num_rpcs_finished_ok]->timestamp(),
+        get_call->replies[num_rpcs_finished_ok]->val()));
+      // cout << "At read get ts = " << get_call->replies[num_rpcs_finished_ok]->timestamp() << "for key " << key << endl;
+      num_rpcs_finished_ok++;
+    } else {
+        if (status.error_code() == grpc::StatusCode::DEADLINE_EXCEEDED) {
+          cout << "rpc timed out" << endl;
+        } else if(status.error_code() == grpc::StatusCode::NOT_FOUND) {
+          cout << "read get phase - key not found. " << key << endl;
         }
+      }
     }
     std::pair<time_t, string> max_ts;
     if(timeOut){
@@ -119,100 +126,113 @@ std::pair<time_t, string> ABDClient::ReadGetPhase(std::string key, char* err) {
 
 
 //-----------------------------------------------------------------------------
+
 void ABDClient::ReadSetPhase(std::string key, std::string value, int max_ts, char* err) {
   // This is phase 2 of the read protocol.
   // Add code below!
   cout << "In Read Set" << endl;
-    ABDClient::AsyncCall<abd_algo::ReadSetArg,abd_algo::ReadSetRet> * set_call = new ABDClient::AsyncCall<abd_algo::ReadSetArg,abd_algo::ReadSetRet>();
-    abd_algo::ReadSetArg request;
-    
-    request.set_key(key);
-    request.set_val(value);
-    request.set_timestamp(max_ts);
-    std::map<std::string,std::shared_ptr<Channel>> :: iterator it = channels_.begin();
-    for(it = channels_.begin();it!=channels_.end();it++){
-        // cout << "Writing get from " << replica << endl;
-        std::shared_ptr<Channel> channel = it->second;
+  ABDClient::AsyncCall<abd_algo::ReadSetArg,abd_algo::ReadSetRet> * set_call =
+    new ABDClient::AsyncCall<abd_algo::ReadSetArg,abd_algo::ReadSetRet>();
+  abd_algo::ReadSetArg request;
 
-        const auto start_time = chrono::system_clock::now();
-        const chrono::system_clock::time_point deadline = start_time + chrono::milliseconds(5000);
+  request.set_key(key);
+  request.set_val(value);
+  request.set_timestamp(max_ts);
+  std::map<std::string,std::shared_ptr<Channel>> :: iterator it = channels_.begin();
+  int counter = 0;
+  for (it = channels_.begin();it!=channels_.end();it++){
+    // cout << "Writing get from " << replica << endl;
+    std::shared_ptr<Channel> channel = it->second;
+    const auto start_time = chrono::system_clock::now();
+    const chrono::system_clock::time_point deadline = start_time + chrono::milliseconds(5000);
 
-        set_call->stubs.emplace_back(ABDImpl::NewStub(channel));
-        ClientContext* context = new ClientContext();
-        context->set_deadline(deadline);
-        set_call->contexts.emplace_back(context);
+    set_call->stubs.emplace_back(ABDImpl::NewStub(channel));
+    ClientContext* context = new ClientContext();
+    context->set_deadline(deadline);
+    set_call->contexts.emplace_back(context);
 
-        set_call->statuses.emplace_back(new Status());                              
-        abd_algo::ReadSetRet* reply = new abd_algo::ReadSetRet();                                        
-        set_call->replies.emplace_back(reply);
+    set_call->statuses.emplace_back(new Status());
+    abd_algo::ReadSetRet* reply = new abd_algo::ReadSetRet();
+    set_call->replies.emplace_back(reply);
 
-        int i = std::distance(it, channels_.begin());
-        set_call->rpcs.emplace_back((set_call->stubs[i]->AsyncReadSet)(context, request, &(set_call)->cq));                                                          
-        set_call->rpcs[i]->Finish(reply, set_call->statuses[i].get(), (void*)i);                                                         
+    int i = counter;
+    set_call->rpcs.emplace_back((set_call->stubs[i]->AsyncReadSet)(context, request, &(set_call)->cq));
+    set_call->rpcs[i]->Finish(reply, set_call->statuses[i], (void*)i);
+    counter++;
+  }
+
+  std::atomic<int> num_rpcs_finished(0);
+  std::atomic<int> num_rpcs_finished_ok(0);
+  int majority = channels_.size()/2 + 1;
+  bool newKey = false;
+  bool timeOut = false;
+  while (num_rpcs_finished < majority) {
+    void* which_backend_ptr;
+    bool ok = false;
+    // Block until the next result is available in the completion queue "cq".
+    set_call->cq.Next(&which_backend_ptr, &ok);
+    num_rpcs_finished++;
+    const size_t which_backend = size_t(which_backend_ptr);
+    const Status& status = *(set_call->statuses[which_backend]);
+    if (status.ok()) {
+      num_rpcs_finished_ok++;
+    } else {
+      if (status.error_code() == grpc::StatusCode::DEADLINE_EXCEEDED) {
+      cout << "rpc timed out" << endl;
+      timeOut = true;
+    } else if(status.error_code() == grpc::StatusCode::NOT_FOUND) {
+        cout << "key not found read set phase" << key << endl;
+      }
     }
-
-    int num_rpcs_finished = 0;
-    int num_rpcs_finished_ok = 0;
-    int majority = channels_.size()/2 + 1;
-    bool newKey = false;
-    bool timeOut = false;
-    while (num_rpcs_finished < majority) {
-        void* which_backend_ptr;
-        bool ok = false;
-        // Block until the next result is available in the completion queue "cq".
-        set_call->cq.Next(&which_backend_ptr, &ok);
-        num_rpcs_finished++;
-        const size_t which_backend = size_t(which_backend_ptr);
-        const Status& status = *(set_call->statuses[which_backend].get());
-        if (status.ok()) {
-            num_rpcs_finished_ok++;
-        } else {
-            if (status.error_code() == grpc::StatusCode::DEADLINE_EXCEEDED) {
-                cout << "rpc timed out" << endl;
-                timeOut = true;
-            } else if(status.error_code() == grpc::StatusCode::NOT_FOUND) {
-                cout << "key not found read set phase" << key << endl;
-            }
-        }
-    }
-    cout << "Read Set Done." << endl;
+  }
+  cout << "Read Set Done." << endl;
 }
 
 //-----------------------------------------------------------------------------
+
 void ABDClient::Write(std::string key, std::string value) {
   // Call the two phases of the write protocol here.
   // Add code below!
   pair<time_t,int> p = WriteGetPhase(key, value);
   WriteSetPhase(key, value, p.first);
-}   
+}
+
 //-----------------------------------------------------------------------------
-std::pair<time_t, int> ABDClient::WriteGetPhase(std::string key,std::string value) {
+std::pair<time_t, int> ABDClient::WriteGetPhase(std::string key,
+                                                std::string value) {
   // This is the get phase of the write protocol.
-  // Add code below!
   cout << "In Write Get " << endl;
-  ABDClient::AsyncCall<abd_algo::WriteGetArg,abd_algo::WriteGetRet> * get_call = new ABDClient::AsyncCall<abd_algo::WriteGetArg,abd_algo::WriteGetRet>();
+  ABDClient::AsyncCall<abd_algo::WriteGetArg,abd_algo::WriteGetRet>* get_call =
+    new ABDClient::AsyncCall<abd_algo::WriteGetArg,abd_algo::WriteGetRet>();
   abd_algo::WriteGetArg request;
   request.set_key(key);
   request.set_val(value);
-  std::map<std::string,std::shared_ptr<Channel>> :: iterator it = channels_.begin();
-  for(it = channels_.begin();it!=channels_.end();it++){
+  std::map<std::string,std::shared_ptr<Channel>> :: iterator it =
+    channels_.begin();
+
+  int counter = 0;
+  for (it = channels_.begin(); it!=channels_.end();it++){
     // cout << "Writing get from " << replica << endl;
     std::shared_ptr<Channel> channel = it->second;
 
     const auto start_time = chrono::system_clock::now();
-    const chrono::system_clock::time_point deadline = start_time + chrono::milliseconds(5000);
+    const chrono::system_clock::time_point deadline =
+      start_time + chrono::milliseconds(5000);
 
     get_call->stubs.emplace_back(ABDImpl::NewStub(channel));
     ClientContext* context = new ClientContext();
     context->set_deadline(deadline);
     get_call->contexts.emplace_back(context);
+    get_call->statuses.emplace_back(new Status());
 
-    get_call->statuses.emplace_back(new Status());                              
-    abd_algo::WriteGetRet* reply = new abd_algo::WriteGetRet();                                        
+    abd_algo::WriteGetRet* reply = new abd_algo::WriteGetRet();
     get_call->replies.emplace_back(reply);
-    int i = std::distance(it, channels_.begin());
-    get_call->rpcs.emplace_back((get_call->stubs[i]->AsyncWriteGet)(context, request, &(get_call)->cq));                                                          
-    get_call->rpcs[i]->Finish(reply, get_call->statuses[i].get(), (void*)i);                                                         
+
+    int i = counter;
+    get_call->rpcs.emplace_back(
+      (get_call->stubs[i]->AsyncWriteGet)(context, request, &(get_call)->cq));
+    get_call->rpcs[i]->Finish(reply, get_call->statuses[i], (void*)i);
+    counter++;
   }
 
     int num_rpcs_finished = 0;
@@ -227,10 +247,10 @@ std::pair<time_t, int> ABDClient::WriteGetPhase(std::string key,std::string valu
         get_call->cq.Next(&which_backend_ptr, &ok);
         num_rpcs_finished++;
         const size_t which_backend = size_t(which_backend_ptr);
-        const Status& status = *(get_call->statuses[which_backend].get());
+        const Status& status = *(get_call->statuses[which_backend]);
 
         if (status.ok()) {
-            // cout << "rpc ok" << endl;
+            cout << "rpc ok" << endl;
             timestamps.emplace_back(make_pair(get_call->replies[num_rpcs_finished_ok]->timestamp(),get_call->replies[num_rpcs_finished_ok]->client_id()));
             // cout << "Timestamp: " << get_call->replies[num_rpcs_finished_ok]->timestamp() << endl;
             num_rpcs_finished_ok++;
@@ -266,39 +286,44 @@ void ABDClient::WriteSetPhase(std::string key, std::string value, int max_ts) {
   // This is the set phase of the write protocol.
   // Add code below!
   cout << "In Write Set" << endl;
-    ABDClient::AsyncCall<abd_algo::WriteSetArg,abd_algo::WriteSetRet> * set_call = new ABDClient::AsyncCall<abd_algo::WriteSetArg,abd_algo::WriteSetRet>();
-    abd_algo::WriteSetArg request;
-    
-    request.set_key(key);
-    request.set_val(value);
-    // cout << "max ts in write set " << max_ts << "key " << key << "value " << value << endl;
-    request.set_timestamp(max_ts);
-    std::map<std::string,std::shared_ptr<Channel>> :: iterator it = channels_.begin();
-    for(it = channels_.begin();it!=channels_.end();it++){
-        // cout << "Writing get from " << replica << endl;
-        std::shared_ptr<Channel> channel = it->second;
+  ABDClient::AsyncCall<abd_algo::WriteSetArg,abd_algo::WriteSetRet>* set_call =
+    new ABDClient::AsyncCall<abd_algo::WriteSetArg,abd_algo::WriteSetRet>();
+  abd_algo::WriteSetArg request;
 
-        const auto start_time = chrono::system_clock::now();
-        const chrono::system_clock::time_point deadline = start_time + chrono::milliseconds(5000);
+  request.set_key(key);
+  request.set_val(value);
+  // cout << "max ts in write set " << max_ts << "key " << key << "value " << value << endl;
+  request.set_timestamp(max_ts);
+  std::map<std::string,std::shared_ptr<Channel>> :: iterator it = channels_.begin();
 
-        set_call->stubs.emplace_back(ABDImpl::NewStub(channel));
-        ClientContext* context = new ClientContext();
-        context->set_deadline(deadline);
-        set_call->contexts.emplace_back(context);
+  int counter = 0;
+  for(it = channels_.begin();it!=channels_.end();it++){
+    // cout << "Writing get from " << replica << endl;
+    std::shared_ptr<Channel> channel = it->second;
 
-        set_call->statuses.emplace_back(new Status());                              
-        abd_algo::WriteSetRet* reply = new abd_algo::WriteSetRet();                                        
-        set_call->replies.emplace_back(reply);
-        int i = std::distance(it, channels_.begin());
-        set_call->rpcs.emplace_back((set_call->stubs[i]->AsyncWriteSet)(context, request, &(set_call)->cq));                                                          
-        set_call->rpcs[i]->Finish(reply, set_call->statuses[i].get(), (void*)i);                                                         
-    }
+    const auto start_time = chrono::system_clock::now();
+    const chrono::system_clock::time_point deadline = start_time + chrono::milliseconds(5000);
+
+    set_call->stubs.emplace_back(ABDImpl::NewStub(channel));
+    ClientContext* context = new ClientContext();
+    context->set_deadline(deadline);
+    set_call->contexts.emplace_back(context);
+
+    set_call->statuses.emplace_back(new Status());
+    abd_algo::WriteSetRet* reply = new abd_algo::WriteSetRet(); 
+    set_call->replies.emplace_back(reply);
+    int i = counter;
+    set_call->rpcs.emplace_back((
+      set_call->stubs[i]->AsyncWriteSet)(context, request, &(set_call)->cq));
+    set_call->rpcs[i]->Finish(reply, set_call->statuses[i], (void*)i);
+    counter++;
+  }
 
     int num_rpcs_finished = 0;
     int num_rpcs_finished_ok = 0;
     bool newKey = false;
     int majority = this->channels_.size()/2 + 1;
-    
+
     while (num_rpcs_finished < majority) {
         void* which_backend_ptr;
         bool ok = false;
@@ -306,7 +331,7 @@ void ABDClient::WriteSetPhase(std::string key, std::string value, int max_ts) {
         set_call->cq.Next(&which_backend_ptr, &ok);
         num_rpcs_finished++;
         const size_t which_backend = size_t(which_backend_ptr);
-        const Status& status = *(set_call->statuses[which_backend].get());
+        const Status& status = *(set_call->statuses[which_backend]);
         // cout << "rpc #" << which_backend << " done after " << elapsed_ms(start_time) << "ms" << endl;
         if (status.ok()) {
             // cout << "rpc ok" << endl;
@@ -351,8 +376,8 @@ int main(int argc, char** argv) {
   std::string operation;
   std::string key;
   std::string value;
-  
-  while(1){ 
+
+  while(1){
     cin >> operation;
     if(strcmp(operation.c_str(),"get")==0){
         cin >> key;
