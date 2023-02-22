@@ -7,7 +7,9 @@
 
 #include "abd_algo.grpc.pb.h"
 
-// temp
+#include <fstream>
+#include <sstream>
+
 using abd_algo::ABDImpl;
 
 using grpc::Channel;
@@ -373,19 +375,37 @@ int main(int argc, char** argv) {
     target_str = "localhost:50051";
   }
   ABDClient abd_client({"10.10.1.1:50052", "10.10.1.2:50052", "10.10.1.3:50052"});
-  std::string operation;
-  std::string key;
-  std::string value;
 
-  while(1){
-    cin >> operation;
+  vector<string> operations, keys, values;
+  string line;
+  ifstream myfile("./../../../../benchmark/input.txt");
+  if (myfile.is_open())
+  {
+    while (getline(myfile, line)) {
+      istringstream ss(line);
+      string word;
+      while (ss >> word) {
+        if (word.size() == 3) {
+          operations.push_back(word);
+        } else if (word.size() == 24) {
+          keys.push_back(word);
+        } else {
+          values.push_back(word);
+        }
+      }
+    }
+    myfile.close();
+  } else {
+    cout << "cannot find file";
+  }
+
+  int iter = 0;
+  for (auto operation: operations) {
     if(strcmp(operation.c_str(),"get")==0){
-        cin >> key;
-        std::string val = abd_client.Read(key);
+        std::string val = abd_client.Read(keys[iter]);
         cout << "Value " <<  val << endl;
     }else if(strcmp(operation.c_str(),"put")==0){
-        cin >> key >> value;
-        abd_client.Write(key,value);
+        abd_client.Write(keys[iter], values[iter]);
     }
   }
   return 0;
