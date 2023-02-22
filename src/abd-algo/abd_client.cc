@@ -7,6 +7,7 @@
 
 #include "abd_algo.grpc.pb.h"
 
+#include <assert.h>
 #include <fstream>
 #include <sstream>
 
@@ -407,6 +408,16 @@ int main(int argc, char** argv) {
     }else if(strcmp(operation.c_str(),"put")==0){
         abd_client.Write(keys[iter], values[iter]);
     }
+    iter++;
   }
+
+  // Check values
+  cout << "Checking what we wrote is written" << endl;
+  for (int i = 0; i < keys.size(); i++) {
+    std::string val = abd_client.Read(keys[i]);
+    cout << "Value " <<  val << endl;
+    assert(val == values[i]);
+  }
+
   return 0;
 }
