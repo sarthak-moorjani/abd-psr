@@ -351,7 +351,8 @@ void ABDClient::WriteSetPhase(std::string key, std::string value, int max_ts) {
     // cout << set_call->stubs.size() << " rpcs attempted, " << num_rpcs_finished_ok << "/" << num_rpcs_finished << " rpcs finished ok" << endl;
 }
 
-bool initialise(){
+bool initialise(ABDClient abd_client) {
+
   vector<string> operations, keys, values;
   string line;
   cout << "Initialising the store with 1M values.." <<endl;
@@ -376,7 +377,7 @@ bool initialise(){
     cout << "cannot find file, run the random_gen file in benchmark directory!" << endl;
     return false;
   }
-  
+
   int iter = 0;
   for (auto operation: operations) {
     if(strcmp(operation.c_str(),"get")==0){
@@ -401,9 +402,9 @@ bool initialise(){
 //-----------------------------------------------------------------------------
 
 int main(int argc, char** argv) {
-  std::bool is_initialise = std::stoi(argv[1]); 
-  std::string workload_input_file = std::stoi(argv[2]); 
-  std::string workload_output_file = std::stoi(argv[3]); 
+  bool is_initialise = std::stoi(argv[1]);
+  std::string workload_input_file = argv[2];
+  std::string workload_output_file = argv[3];
   ABDClient abd_client({"10.10.1.1:50052", "10.10.1.2:50052", "10.10.1.3:50052"});
   // std::string arg_str("--target");
   
@@ -428,7 +429,7 @@ int main(int argc, char** argv) {
   // }
   
   if(is_initialise){
-    if(!initialise())
+    if(!initialise(abd_client))
       cout << "Initialization failed" << endl;
     return 0;
   }
