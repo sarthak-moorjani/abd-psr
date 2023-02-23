@@ -23,8 +23,9 @@ if input_arg[1] == 'R':
 elif input_arg[1] == 'WR':
     workload = 'WR'
 
-f = open("input.txt", "w")
-for i in range(10):
+f = open("inputs/input.txt", "w")
+for i in range(100):
+    # print(i)
     if workload == 'W':
         f.write("put " + get_random_string(24) + " " + get_random_string(10) + "\n")
     elif workload == 'R':

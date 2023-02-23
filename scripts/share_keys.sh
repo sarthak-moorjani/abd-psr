@@ -14,5 +14,5 @@ do
   rm -rf /users/$USER/.ssh/
   scp ~/.ssh/id_ed25519.pub $i:/users/$USER/.ssh/id_ed25519.pub
   scp ~/.ssh/id_ed25519 $i:/users/$USER/.ssh/id_ed25519
-  ssh -i ~/.ssh/id_ed25519 -t $i 'eval "$(ssh-agent -s)"  && ssh-add /users/$USER/.ssh/id_ed25519'
+  sudo ssh -i ~/.ssh/id_ed25519 -t $i 'eval "$(ssh-agent -s)"  && ssh-add /users/$USER/.ssh/id_ed25519'
 done
