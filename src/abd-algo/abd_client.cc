@@ -402,7 +402,11 @@ bool initialise(ABDClient abd_client) {
 //-----------------------------------------------------------------------------
 
 int main(int argc, char** argv) {
-  bool is_initialise = std::stoi(argv[1]);
+  bool is_initialise = true;
+  if (argv[1] == "false") {
+    cout << "initialise set to false" << endl;
+    is_initialise = false;
+  }
   std::string workload_input_file = argv[2];
   std::string workload_output_file = argv[3];
   ABDClient abd_client({"10.10.1.1:50052", "10.10.1.2:50052", "10.10.1.3:50052"});
