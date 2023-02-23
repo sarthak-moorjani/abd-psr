@@ -18,7 +18,7 @@ echo $(pwd)
 
 echo $(pwd)
 python3 benchmark/random_gen.py W
-# ./abd_client true input.txt input.txt
+./abd_client true input.txt input.txt
 
 pushd inputs/
 

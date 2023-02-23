@@ -402,10 +402,10 @@ bool initialise(){
 
 int main(int argc, char** argv) {
   std::string target_str;
-  // std::string user_name = argv[1];
   std::bool is_initialise = argv[1];
-  std::workload_input_file = argv[2];
-  std::workload_output_file = argv[3];
+  std::string workload_input_file = argv[2];
+  std::string workload_output_file = argv[3];
+  ABDClient abd_client({"10.10.1.1:50052", "10.10.1.2:50052", "10.10.1.3:50052"});
   // std::string arg_str("--target");
   
   // if (argc > 1) {
@@ -427,7 +427,7 @@ int main(int argc, char** argv) {
   // } else {
   //   target_str = "localhost:50051";
   // }
-  ABDClient abd_client({"10.10.1.1:50052", "10.10.1.2:50052", "10.10.1.3:50052"});
+  
   if(is_initialise){
     if(!initialise())
       cout << "Initialization failed" << endl;
@@ -436,6 +436,8 @@ int main(int argc, char** argv) {
   string workload_input_filename  = "./../../../../inputs/" +  workload_input_file;
    string workload_input_filename  = "./../../../../output/" +  workload_output_file;
   ifstream myfile(workload_input_filename);
+  vector<string> operations, keys, values;
+  string line;
   if (myfile.is_open())
   {
     while (getline(myfile, line)) {
