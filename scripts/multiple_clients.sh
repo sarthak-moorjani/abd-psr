@@ -1,8 +1,8 @@
 #!/bin/bash
 
 # install gnu-parallel
-# apt-get update
-# apt-get install gnu-parallel
+sudo apt-get update
+sudo apt-get install gnu-parallel
 
 # change working directory from scripts
 pushd ../
