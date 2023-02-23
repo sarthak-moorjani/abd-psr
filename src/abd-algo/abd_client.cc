@@ -351,35 +351,11 @@ void ABDClient::WriteSetPhase(std::string key, std::string value, int max_ts) {
     // cout << set_call->stubs.size() << " rpcs attempted, " << num_rpcs_finished_ok << "/" << num_rpcs_finished << " rpcs finished ok" << endl;
 }
 
-//-----------------------------------------------------------------------------
-
-int main(int argc, char** argv) {
-  std::string target_str;
-  std::string arg_str("--target");
-  if (argc > 1) {
-    std::string arg_val = argv[1];
-    size_t start_pos = arg_val.find(arg_str);
-    if (start_pos != std::string::npos) {
-      start_pos += arg_str.size();
-      if (arg_val[start_pos] == '=') {
-        target_str = arg_val.substr(start_pos + 1);
-      } else {
-        std::cout << "The only correct argument syntax is --target="
-                  << std::endl;
-        return 0;
-      }
-    } else {
-      std::cout << "The only acceptable argument is --target=" << std::endl;
-      return 0;
-    }
-  } else {
-    target_str = "localhost:50051";
-  }
-  ABDClient abd_client({"10.10.1.1:50052", "10.10.1.2:50052", "10.10.1.3:50052"});
-
+bool initialise(){
   vector<string> operations, keys, values;
   string line;
-  ifstream myfile("./../../../../benchmark/input.txt");
+  cout << "Initialising the store with 1M values.." <<endl;
+  ifstream myfile("./../../../../inputs/input.txt");
   if (myfile.is_open())
   {
     while (getline(myfile, line)) {
@@ -397,9 +373,10 @@ int main(int argc, char** argv) {
     }
     myfile.close();
   } else {
-    cout << "cannot find file";
+    cout << "cannot find file, run the random_gen file in benchmark directory!" << endl;
+    return false;
   }
-
+  
   int iter = 0;
   for (auto operation: operations) {
     if(strcmp(operation.c_str(),"get")==0){
@@ -411,13 +388,99 @@ int main(int argc, char** argv) {
     iter++;
   }
 
-  // Check values
   cout << "Checking what we wrote is written" << endl;
   for (int i = 0; i < keys.size(); i++) {
     std::string val = abd_client.Read(keys[i]);
     cout << "Value " <<  val << endl;
     assert(val == values[i]);
   }
+  cout << "Initialisation done!" <<endl;
+  return true;
+}
+
+//-----------------------------------------------------------------------------
+
+int main(int argc, char** argv) {
+  std::string target_str;
+  // std::string user_name = argv[1];
+  std::bool is_initialise = argv[1];
+  std::workload_input_file = argv[2];
+  std::workload_output_file = argv[3];
+  // std::string arg_str("--target");
+  
+  // if (argc > 1) {
+  //   std::string arg_val = argv[1];
+  //   size_t start_pos = arg_val.find(arg_str);
+  //   if (start_pos != std::string::npos) {
+  //     start_pos += arg_str.size();
+  //     if (arg_val[start_pos] == '=') {
+  //       target_str = arg_val.substr(start_pos + 1);
+  //     } else {
+  //       std::cout << "The only correct argument syntax is --target="
+  //                 << std::endl;
+  //       return 0;
+  //     }
+  //   } else {
+  //     std::cout << "The only acceptable argument is --target=" << std::endl;
+  //     return 0;
+  //   }
+  // } else {
+  //   target_str = "localhost:50051";
+  // }
+  ABDClient abd_client({"10.10.1.1:50052", "10.10.1.2:50052", "10.10.1.3:50052"});
+  if(is_initialise){
+    if(!initialise())
+      cout << "Initialization failed" << endl;
+    return 0;
+  }
+  string workload_input_filename  = "./../../../../inputs/" +  workload_input_file;
+   string workload_input_filename  = "./../../../../output/" +  workload_output_file;
+  ifstream myfile(workload_input_filename);
+  if (myfile.is_open())
+  {
+    while (getline(myfile, line)) {
+      istringstream ss(line);
+      string word;
+      while (ss >> word) {
+        if (word.size() == 3) {
+          operations.push_back(word);
+        } else if (word.size() == 24) {
+          keys.push_back(word);
+        } else {
+          values.push_back(word);
+        }
+      }
+    }
+    myfile.close();
+  } else {
+    cout << "cannot find " + workload_input_filename " file, run the random_gen file in benchmark directory!" << endl;
+  }
+
+    int iter = 0;
+  for (auto operation: operations) {
+    if(strcmp(operation.c_str(),"get")==0){
+        std::string val = abd_client.Read(keys[iter]);
+        cout << argv[1] << " Value " <<  val << endl;
+    }else if(strcmp(operation.c_str(),"put")==0){
+        abd_client.Write(keys[iter], values[iter]);
+    }
+    iter++;
+  }
+  // for read-workload
+
+
+
+
+
+   
+
+
+  
+
+  
+
+  // Check values
+  
 
   return 0;
 }
