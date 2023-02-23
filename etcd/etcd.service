@@ -1,0 +1,12 @@
+[Unit]
+Description=etcd
+
+[Service]
+Type=notify
+EnvironmentFile=/etc/etcd
+ExecStart=/usr/bin/etcd
+Restart=on-failure
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target
