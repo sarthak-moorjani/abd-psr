@@ -401,10 +401,9 @@ bool initialise(){
 //-----------------------------------------------------------------------------
 
 int main(int argc, char** argv) {
-  std::string target_str;
-  std::bool is_initialise = argv[1];
-  std::string workload_input_file = argv[2];
-  std::string workload_output_file = argv[3];
+  std::bool is_initialise = std::stoi(argv[1]); 
+  std::string workload_input_file = std::stoi(argv[2]); 
+  std::string workload_output_file = std::stoi(argv[3]); 
   ABDClient abd_client({"10.10.1.1:50052", "10.10.1.2:50052", "10.10.1.3:50052"});
   // std::string arg_str("--target");
   
@@ -434,7 +433,7 @@ int main(int argc, char** argv) {
     return 0;
   }
   string workload_input_filename  = "./../../../../inputs/" +  workload_input_file;
-   string workload_input_filename  = "./../../../../output/" +  workload_output_file;
+   string workload_output_filename  = "./../../../../output/" +  workload_output_file;
   ifstream myfile(workload_input_filename);
   vector<string> operations, keys, values;
   string line;
@@ -455,7 +454,7 @@ int main(int argc, char** argv) {
     }
     myfile.close();
   } else {
-    cout << "cannot find " + workload_input_filename " file, run the random_gen file in benchmark directory!" << endl;
+    cout << "cannot find " + workload_input_filename + " file, run the random_gen file in benchmark directory!" << endl;
   }
 
     int iter = 0;
