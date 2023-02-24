@@ -39,7 +39,7 @@ echo $(pwd)
 
 # generate x clients workload
 # generate read_workload
-clients=5
+clients=1
 for i in $(eval echo {1..$clients})
 do 
     python3 ./../benchmark/read_workload.py $i
@@ -65,7 +65,9 @@ export -f run_cpp_executable
 
 echo $(pwd)
 # List of read_workload nput files to process
-input_files=$(ls ./inputs/read_workload_input*.txt)
+pushd inputs
+input_files=$(ls ./read_workload_input*.txt)
+popd
 
 #  Run gnu-parallel
 pushd ./src/abd-algo/cmake/build

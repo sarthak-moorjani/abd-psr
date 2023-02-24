@@ -24,7 +24,7 @@ elif input_arg[1] == 'WR':
     workload = 'WR'
 
 f = open("inputs/input.txt", "w")
-for i in range(100):
+for i in range(1000 * 1000):
     # print(i)
     if workload == 'W':
         f.write("put " + get_random_string(24) + " " + get_random_string(10) + "\n")
