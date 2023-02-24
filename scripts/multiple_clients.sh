@@ -39,7 +39,7 @@ echo $(pwd)
 
 # generate x clients workload
 # generate read_workload
-clients=1
+clients=10
 for i in $(eval echo {1..$clients})
 do 
     python3 ./../benchmark/read_workload.py $i

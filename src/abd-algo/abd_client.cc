@@ -124,8 +124,8 @@ std::pair<time_t, string> ABDClient::ReadGetPhase(std::string key, char* err) {
         return p1.first < p2.first;
     };
     max_ts = *max_element(timestamps.begin(),timestamps.end(), comparator);
-    // cout << max_ts.first << endl;
-    // cout << "Read Get Done." << endl;
+     cout << max_ts.first << endl;
+     cout << "Read Get Done." << endl;
     return max_ts;
 }
 
@@ -440,8 +440,10 @@ int main(int argc, char** argv) {
       cout << "Initialization failed" << endl;
     return 0;
   }
-  string workload_input_filename  = "/users/sarthakm/abd-psr/inputs/" +  workload_input_file;
-   string workload_output_filename  = "/users/sarthakm/abd-psr/outputs/" +  workload_output_file;
+
+  string workload_input_filename  = "/users/Prajwal/abd-psr/inputs/" +  workload_input_file;
+   string workload_output_filename  = "/users/Prajwal/abd-psr/outputs/" +  workload_output_file;
+   cout << workload_input_filename << endl;
   ifstream myfile(workload_input_filename);
   vector<string> operations, keys, values;
   string line;
@@ -464,13 +466,13 @@ int main(int argc, char** argv) {
   } else {
     cout << "cannot find " + workload_input_filename + " file, run the random_gen file in benchmark directory!" << endl;
   }
-
+  cout << operations.size() << " " << keys.size() << endl;
     int iter = 0;
   for (auto operation: operations) {
     if(strcmp(operation.c_str(),"get")==0){
         std::string val = abd_client.Read(keys[iter]);
         if (val.empty()) {
-          cout << "Key not found" << endl;
+          cout << "Key not found" << endl;iter++;
           continue;
         }
         cout << argv[1] << " Value " <<  val << endl;
