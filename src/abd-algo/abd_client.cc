@@ -42,7 +42,7 @@ string ABDClient::Read(string key) {
         return p.second;
     }
   }
-  return NULL;
+  return "";
 }
 
 
@@ -88,6 +88,7 @@ std::pair<time_t, string> ABDClient::ReadGetPhase(std::string key, char* err) {
   int majority = channels_.size()/2 + 1;
   bool timeOut = false;
   std::vector<std::pair<time_t,string>>timestamps;
+  std::pair<time_t, string> max_ts;
   while (num_rpcs_finished < majority) {
     void* which_backend_ptr;
     bool ok = false;
@@ -109,10 +110,11 @@ std::pair<time_t, string> ABDClient::ReadGetPhase(std::string key, char* err) {
           // cout << "rpc timed out" << endl;
         } else if(status.error_code() == grpc::StatusCode::NOT_FOUND) {
           cout << "read get phase - key not found. " << key << endl;
+          err = "KeyNotFound";
+          return max_ts;
         }
       }
     }
-    std::pair<time_t, string> max_ts;
     if(timeOut){
         err = "Timeout Occurred";
         return max_ts;
@@ -403,7 +405,8 @@ bool initialise(ABDClient abd_client) {
 
 int main(int argc, char** argv) {
   bool is_initialise = true;
-  if (argv[1] == "false") {
+
+  if (strcmp(argv[1], "false") == 0) {
     cout << "initialise set to false" << endl;
     is_initialise = false;
   }
@@ -431,14 +434,14 @@ int main(int argc, char** argv) {
   // } else {
   //   target_str = "localhost:50051";
   // }
-  
+
   if(is_initialise){
     if(!initialise(abd_client))
       cout << "Initialization failed" << endl;
     return 0;
   }
-  string workload_input_filename  = "./../../../../inputs/" +  workload_input_file;
-   string workload_output_filename  = "./../../../../output/" +  workload_output_file;
+  string workload_input_filename  = "/users/sarthakm/abd-psr/inputs/" +  workload_input_file;
+   string workload_output_filename  = "/users/sarthakm/abd-psr/outputs/" +  workload_output_file;
   ifstream myfile(workload_input_filename);
   vector<string> operations, keys, values;
   string line;
@@ -466,6 +469,10 @@ int main(int argc, char** argv) {
   for (auto operation: operations) {
     if(strcmp(operation.c_str(),"get")==0){
         std::string val = abd_client.Read(keys[iter]);
+        if (val.empty()) {
+          cout << "Key not found" << endl;
+          continue;
+        }
         cout << argv[1] << " Value " <<  val << endl;
     }else if(strcmp(operation.c_str(),"put")==0){
         abd_client.Write(keys[iter], values[iter]);
@@ -474,19 +481,6 @@ int main(int argc, char** argv) {
   }
   // for read-workload
 
-
-
-
-
-   
-
-
-  
-
-  
-
   // Check values
-  
-
   return 0;
 }
