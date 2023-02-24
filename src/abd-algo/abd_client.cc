@@ -51,7 +51,7 @@ std::pair<time_t, string> ABDClient::ReadGetPhase(std::string key, char* err) {
   // This is phase 1 of the read protocol.
   // Add code below!
 
-  cout << "In Read Get" << endl;
+  // cout << "In Read Get" << endl;
   
   ABDClient::AsyncCall<abd_algo::ReadGetArg,abd_algo::ReadGetRet>* get_call =
     new ABDClient::AsyncCall<abd_algo::ReadGetArg,abd_algo::ReadGetRet>();
@@ -106,7 +106,7 @@ std::pair<time_t, string> ABDClient::ReadGetPhase(std::string key, char* err) {
       num_rpcs_finished_ok++;
     } else {
         if (status.error_code() == grpc::StatusCode::DEADLINE_EXCEEDED) {
-          cout << "rpc timed out" << endl;
+          // cout << "rpc timed out" << endl;
         } else if(status.error_code() == grpc::StatusCode::NOT_FOUND) {
           cout << "read get phase - key not found. " << key << endl;
         }
@@ -123,7 +123,7 @@ std::pair<time_t, string> ABDClient::ReadGetPhase(std::string key, char* err) {
     };
     max_ts = *max_element(timestamps.begin(),timestamps.end(), comparator);
     // cout << max_ts.first << endl;
-    cout << "Read Get Done." << endl;
+    // cout << "Read Get Done." << endl;
     return max_ts;
 }
 
@@ -181,14 +181,14 @@ void ABDClient::ReadSetPhase(std::string key, std::string value, int max_ts, cha
       num_rpcs_finished_ok++;
     } else {
       if (status.error_code() == grpc::StatusCode::DEADLINE_EXCEEDED) {
-      cout << "rpc timed out" << endl;
+      // cout << "rpc timed out" << endl;
       timeOut = true;
     } else if(status.error_code() == grpc::StatusCode::NOT_FOUND) {
-        cout << "key not found read set phase" << key << endl;
+        // cout << "key not found read set phase" << key << endl;
       }
     }
   }
-  cout << "Read Set Done." << endl;
+  // cout << "Read Set Done." << endl;
 }
 
 //-----------------------------------------------------------------------------
@@ -204,7 +204,7 @@ void ABDClient::Write(std::string key, std::string value) {
 std::pair<time_t, int> ABDClient::WriteGetPhase(std::string key,
                                                 std::string value) {
   // This is the get phase of the write protocol.
-  cout << "In Write Get " << endl;
+  // cout << "In Write Get " << endl;
   ABDClient::AsyncCall<abd_algo::WriteGetArg,abd_algo::WriteGetRet>* get_call =
     new ABDClient::AsyncCall<abd_algo::WriteGetArg,abd_algo::WriteGetRet>();
   abd_algo::WriteGetArg request;
@@ -253,15 +253,15 @@ std::pair<time_t, int> ABDClient::WriteGetPhase(std::string key,
         const Status& status = *(get_call->statuses[which_backend]);
 
         if (status.ok()) {
-            cout << "rpc ok" << endl;
+            // cout << "rpc ok" << endl;
             timestamps.emplace_back(make_pair(get_call->replies[num_rpcs_finished_ok]->timestamp(),get_call->replies[num_rpcs_finished_ok]->client_id()));
             // cout << "Timestamp: " << get_call->replies[num_rpcs_finished_ok]->timestamp() << endl;
             num_rpcs_finished_ok++;
         } else {
             if (status.error_code() == grpc::StatusCode::DEADLINE_EXCEEDED) {
-                cout << "write get rpc timed out" << endl;
+                // cout << "write get rpc timed out" << endl;
             } else if(status.error_code() == grpc::StatusCode::NOT_FOUND) {
-                cout << "write get phase key not found. Inserting " <<  key << endl;
+                // cout << "write get phase key not found. Inserting " <<  key << endl;
             }
         }
     }
@@ -279,7 +279,7 @@ std::pair<time_t, int> ABDClient::WriteGetPhase(std::string key,
         // cout << "New timestamp value for key: " << key << " value: " << value << " Timestamp: " << max_ts.first <<  endl;
     }
     // cout << max_ts.first << endl;
-    cout << "Write Get Done." << endl;
+    // cout << "Write Get Done." << endl;
     return max_ts;
 }
 
@@ -288,7 +288,7 @@ std::pair<time_t, int> ABDClient::WriteGetPhase(std::string key,
 void ABDClient::WriteSetPhase(std::string key, std::string value, int max_ts) {
   // This is the set phase of the write protocol.
   // Add code below!
-  cout << "In Write Set" << endl;
+  // cout << "In Write Set" << endl;
   ABDClient::AsyncCall<abd_algo::WriteSetArg,abd_algo::WriteSetRet>* set_call =
     new ABDClient::AsyncCall<abd_algo::WriteSetArg,abd_algo::WriteSetRet>();
   abd_algo::WriteSetArg request;
@@ -347,7 +347,7 @@ void ABDClient::WriteSetPhase(std::string key, std::string value, int max_ts) {
             }
         }
     }
-    cout << "Write Set Done." << endl;
+    // cout << "Write Set Done." << endl;
     // cout << set_call->stubs.size() << " rpcs attempted, " << num_rpcs_finished_ok << "/" << num_rpcs_finished << " rpcs finished ok" << endl;
 }
 

@@ -44,14 +44,14 @@ std::mutex mtx;
 Status ABDReplica::ReadGet(ServerContext* context,
                            const abd_algo::ReadGetArg* request,
                             abd_algo::ReadGetRet* reply) {
-  cout << "In Replica Read Get" << endl;
+  // cout << "In Replica Read Get" << endl;
   auto it = kv_store.find(request->key());
   if(it==kv_store.end()){
     return grpc::Status(grpc::StatusCode::NOT_FOUND, "Key not found");
   }
   reply->set_val(it->second.value);
   reply->set_timestamp(it->second.ts);
-  cout << "Replica Read Get Done." << endl;
+  // cout << "Replica Read Get Done." << endl;
   return Status::OK;
 }
 
@@ -59,7 +59,7 @@ Status ABDReplica::ReadGet(ServerContext* context,
 Status ABDReplica::ReadSet(ServerContext* context,
                            const abd_algo::ReadSetArg* request,
                            abd_algo::ReadSetRet* reply) {
-  cout << "In Replica Read Set" << endl;
+  // cout << "In Replica Read Set" << endl;
   mtx.lock();
   // std::cout << "Replica: Read Set got lock" << endl;
   auto it = kv_store.find(request->key());
@@ -74,7 +74,7 @@ Status ABDReplica::ReadSet(ServerContext* context,
   }
   mtx.unlock();
   // std::cout << "Replica: Read Set released lock" << endl;
-  cout << "Replica Read Set Done." << endl;
+  // cout << "Replica Read Set Done." << endl;
 
   return Status::OK;
 }
@@ -82,7 +82,7 @@ Status ABDReplica::ReadSet(ServerContext* context,
 Status ABDReplica::WriteGet(ServerContext* context,
                 const abd_algo::WriteGetArg* request,
                 abd_algo::WriteGetRet* reply){
-  std::cout << "In Replica Write Get" << endl;
+  // std::cout << "In Replica Write Get" << endl;
   std::string search_key = request->key();
   auto it = kv_store.find(search_key);
   //If key does not exist
@@ -95,14 +95,14 @@ Status ABDReplica::WriteGet(ServerContext* context,
   reply->set_timestamp(sr.ts);
   reply->set_client_id(client_id);
   // cout << search_key << " " << sr.value << " " << sr.ts << " : Replica write get" << endl;
-  std::cout << "Replica Write Get Done." << endl;
+  // std::cout << "Replica Write Get Done." << endl;
   return Status::OK;
 }
 
 Status ABDReplica::WriteSet(grpc::ServerContext* context,
                          const abd_algo::WriteSetArg* request,
                          abd_algo::WriteSetRet* reply){
-  std::cout << "In Replica Write Get" << endl;
+  // std::cout << "In Replica Write Get" << endl;
   struct shared_register reg = {
     request->val(),
     request->timestamp()
@@ -113,7 +113,7 @@ Status ABDReplica::WriteSet(grpc::ServerContext* context,
   mtx.unlock();
   // std::cout << "Replica: Write Set released lock" << endl;
   // cout << kv_store.find(request->key())->second.value << endl;
-  std::cout << "Replica Write Get Done." << endl;
+  // std::cout << "Replica Write Get Done." << endl;
   return Status::OK;
 }
 //-----------------------------------------------------------------------------
