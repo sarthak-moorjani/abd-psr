@@ -124,8 +124,8 @@ std::pair<time_t, string> ABDClient::ReadGetPhase(std::string key, char* err) {
         return p1.first < p2.first;
     };
     max_ts = *max_element(timestamps.begin(),timestamps.end(), comparator);
-     cout << max_ts.first << endl;
-     cout << "Read Get Done." << endl;
+     cout << max_ts.second << endl;
+     cout << "Read Get Done" << key << endl;
     return max_ts;
 }
 
@@ -355,6 +355,7 @@ void ABDClient::WriteSetPhase(std::string key, std::string value, int max_ts) {
 
 bool initialise(ABDClient abd_client) {
 
+  cout << "initialise being called" << endl;
   vector<string> operations, keys, values;
   string line;
   cout << "Initialising the store with 1M values.." <<endl;
@@ -384,19 +385,13 @@ bool initialise(ABDClient abd_client) {
   for (auto operation: operations) {
     if(strcmp(operation.c_str(),"get")==0){
         std::string val = abd_client.Read(keys[iter]);
-        cout << "Value " <<  val << endl;
+        //cout << "Value " <<  val << endl;
     }else if(strcmp(operation.c_str(),"put")==0){
         abd_client.Write(keys[iter], values[iter]);
     }
     iter++;
   }
 
-  cout << "Checking what we wrote is written" << endl;
-  for (int i = 0; i < keys.size(); i++) {
-    std::string val = abd_client.Read(keys[i]);
-    cout << "Value " <<  val << endl;
-    assert(val == values[i]);
-  }
   cout << "Initialisation done!" <<endl;
   return true;
 }
@@ -412,7 +407,7 @@ int main(int argc, char** argv) {
   }
   std::string workload_input_file = argv[2];
   std::string workload_output_file = argv[3];
-  ABDClient abd_client({"10.10.1.1:50052", "10.10.1.2:50052", "10.10.1.3:50052"});
+  ABDClient abd_client({"10.10.1.1:50053", "10.10.1.2:50053", "10.10.1.3:50053"});
   // std::string arg_str("--target");
   
   // if (argc > 1) {
