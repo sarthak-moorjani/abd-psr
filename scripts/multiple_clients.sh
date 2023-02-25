@@ -1,5 +1,12 @@
 #!/bin/bash
 
+if [ $# -lt 1 ]; then
+  echo "Error: Expects Cloudlab Username (Case-sensitive)"
+  exit 1
+fi
+
+USER=$1
+
 # install gnu-parallel
 sudo apt-get update
 sudo apt-get install parallel
@@ -21,7 +28,7 @@ popd
 
 # make one client initialise 
 pushd src/abd-algo/cmake/build
-./abd_client true input.txt input.txt
+./abd_client true input.txt input.txt $USER
 popd
 
 
@@ -31,7 +38,7 @@ run_cpp_executable() {
     input_file=$1
     output_file="${input_file%.*}_output.txt"
     echo "Processing ${input_file} -> ${output_file}"
-    ./abd_client false  ${input_file} ${output_file}
+    ./abd_client false  ${input_file} ${output_file} $USER
 }
 
 export -f run_cpp_executable
