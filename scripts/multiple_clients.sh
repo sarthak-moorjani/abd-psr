@@ -46,8 +46,8 @@ export -f run_cpp_executable
 echo $(pwd)
 # List of read_workload nput files to process
 pushd inputs/read_workload
-input_files=$(ls ./read_workload_input*.txt)
-input_files=("${input_files[@]:0:clients}")
+input_files=($(ls -1t ./read_workload_input*.txt | head -n $clients))
+echo "${input_files[@]}"
 popd
 
 #  Run gnu-parallel
