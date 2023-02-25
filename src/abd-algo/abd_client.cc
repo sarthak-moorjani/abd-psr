@@ -18,6 +18,7 @@ using grpc::ClientContext;
 using grpc::Status;
 
 using namespace std;
+using std::chrono::high_resolution_clock;
 
 //-----------------------------------------------------------------------------
 ABDClient::ABDClient(vector<string> target_strs){
@@ -360,13 +361,13 @@ bool initialise(ABDClient abd_client) {
   string line;
   cout << "Initialising the store with 1M values.." <<endl;
   ifstream myfile("./../../../../inputs/input.txt");
-  int counter = 0;
+  //int counter = 0;
   if (myfile.is_open())
   {
     while (getline(myfile, line)) {
-      if (counter == 10) {
-        break;
-      }
+      //if (counter == 10) {
+      //  break;
+      //}
       istringstream ss(line);
       string word;
       while (ss >> word) {
@@ -378,7 +379,7 @@ bool initialise(ABDClient abd_client) {
           values.push_back(word);
         }
       }
-      counter++;
+      //counter++;
     }
     myfile.close();
   } else {
@@ -447,13 +448,13 @@ int main(int argc, char** argv) {
   ifstream myfile(workload_input_filename);
   vector<string> operations, keys, values;
   string line;
-  int counter = 0;
+  // int counter = 0;
   if (myfile.is_open())
   {
     while (getline(myfile, line)) {
-      if (counter == 10) {
-        break;
-      }
+      // if (counter == 10) {
+      //   break;
+      //}
       istringstream ss(line);
       string word;
       while (ss >> word) {
@@ -465,7 +466,7 @@ int main(int argc, char** argv) {
           values.push_back(word);
         }
       }
-      counter++;
+      // counter++;
     }
     myfile.close();
   } else {
@@ -473,6 +474,7 @@ int main(int argc, char** argv) {
   }
   cout << operations.size() << " " << keys.size() << endl;
     int iter = 0;
+  auto start = std::chrono::high_resolution_clock::now();
   for (auto operation: operations) {
     if(strcmp(operation.c_str(),"get")==0){
         std::string val = abd_client.Read(keys[iter]);
@@ -486,6 +488,9 @@ int main(int argc, char** argv) {
     }
     iter++;
   }
+  auto elapsed = std::chrono::high_resolution_clock::now() - start;
+        long long microseconds = std::chrono::duration_cast<std::chrono::microseconds> (elapsed).count();
+      printf("Total Microseconds are %lld", microseconds);
   // for read-workload
 
   // Check values
