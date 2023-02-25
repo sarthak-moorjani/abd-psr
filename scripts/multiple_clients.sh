@@ -7,10 +7,10 @@ sudo apt-get install parallel
 # change working directory from scripts
 pushd ../
 echo $(pwd)
-rm -rf inputs
-mkdir inputs
-rm -rf outputs
-mkdir outputs
+# rm -rf inputs
+# mkdir inputs
+# rm -rf outputs
+# mkdir outputs
 
 
 echo $(pwd)
@@ -24,30 +24,30 @@ make -j 4
 popd
 
 # make one client initialise 
-echo $(pwd)
+# echo $(pwd)
 
-echo $(pwd)
-python3 ./benchmark/random_gen.py W
+# echo $(pwd)
+# python3 ./benchmark/random_gen.py W
 
 pushd src/abd-algo/cmake/build
 ./abd_client true input.txt input.txt
 popd
 
-pushd inputs/
+# pushd inputs/
 
-echo $(pwd)
+# echo $(pwd)
 
-# generate x clients workload
-# generate read_workload
-clients=10
-for i in $(eval echo {1..$clients})
-do 
-    python3 ./../benchmark/read_workload.py $i
-    echo "Client $i read workload generated"
-done
+# # generate x clients workload
+# # generate read_workload
+# clients=10
+# for i in $(eval echo {1..$clients})
+# do 
+#     python3 ./../benchmark/read_workload.py $i
+#     echo "Client $i read workload generated"
+# done
 
-popd
-echo $(pwd)
+# popd
+# echo $(pwd)
 
 
 export SHELL=$(type -p bash)
@@ -65,7 +65,7 @@ export -f run_cpp_executable
 
 echo $(pwd)
 # List of read_workload nput files to process
-pushd inputs
+pushd inputs/read_workload
 input_files=$(ls ./read_workload_input*.txt)
 popd
 
