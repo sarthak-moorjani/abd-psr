@@ -15,7 +15,7 @@ with open('../inputs/input.txt', 'r') as f:
         if len(parts) == 3 and parts[0] == "put":
             all_keys.append(parts[1])
 clients = 32
-total_keys = 1000000
+total_keys = 100000
 for i in range(clients):      
     keys_present = int(0.5*total_keys)
     print(len(all_keys))
@@ -28,7 +28,7 @@ for i in range(clients):
             f.write("put  " + key + " " + get_random_string(10) + "\n")
     j = len(write_selected_keys)
     print('Generating write workload:\n')
-    while j < int(total_keys/2):
+    while j < int(total_keys):
         write_new_key = get_random_string(24)
         if write_new_key not in all_keys:
             with open('../inputs/read_write_workload_input_' + str(i) + '.txt', 'w') as f:
