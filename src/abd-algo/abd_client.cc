@@ -360,9 +360,13 @@ bool initialise(ABDClient abd_client) {
   string line;
   cout << "Initialising the store with 1M values.." <<endl;
   ifstream myfile("./../../../../inputs/input.txt");
+  int counter = 0;
   if (myfile.is_open())
   {
     while (getline(myfile, line)) {
+      if (counter == 10) {
+        break;
+      }
       istringstream ss(line);
       string word;
       while (ss >> word) {
@@ -374,6 +378,7 @@ bool initialise(ABDClient abd_client) {
           values.push_back(word);
         }
       }
+      counter++;
     }
     myfile.close();
   } else {
@@ -407,7 +412,7 @@ int main(int argc, char** argv) {
   }
   std::string workload_input_file = argv[2];
   std::string workload_output_file = argv[3];
-  ABDClient abd_client({"10.10.1.1:50053", "10.10.1.2:50053", "10.10.1.3:50053"});
+  ABDClient abd_client({"10.10.1.1:50052", "10.10.1.2:50052", "10.10.1.3:50052"});
   // std::string arg_str("--target");
   
   // if (argc > 1) {
@@ -436,15 +441,19 @@ int main(int argc, char** argv) {
     return 0;
   }
 
-  string workload_input_filename  = "/users/Prajwal/abd-psr/inputs/" +  workload_input_file;
-   string workload_output_filename  = "/users/Prajwal/abd-psr/outputs/" +  workload_output_file;
+  string workload_input_filename  = "/users/sarthakm/abd-psr/inputs/read_workload/" +  workload_input_file;
+   string workload_output_filename  = "/users/sarthakm/abd-psr/outputs/" +  workload_output_file;
    cout << workload_input_filename << endl;
   ifstream myfile(workload_input_filename);
   vector<string> operations, keys, values;
   string line;
+  int counter = 0;
   if (myfile.is_open())
   {
     while (getline(myfile, line)) {
+      if (counter == 10) {
+        break;
+      }
       istringstream ss(line);
       string word;
       while (ss >> word) {
@@ -456,6 +465,7 @@ int main(int argc, char** argv) {
           values.push_back(word);
         }
       }
+      counter++;
     }
     myfile.close();
   } else {
