@@ -11,7 +11,7 @@ USER=$1
 sudo apt-get update
 sudo apt-get install parallel
 
-clients=2
+clients=16
 
 # change working directory from scripts
 pushd ../
@@ -27,10 +27,10 @@ make -j 4
 popd
 
 # make one client initialise 
-pushd src/abd-algo/cmake/build
-./abd_client true input.txt input.txt $USER
-popd
-
+#pushd src/abd-algo/cmake/build
+#./abd_client true input.txt input.txt $USER
+#popd
+#exit
 
 export SHELL=$(type -p bash)
 
@@ -45,11 +45,13 @@ export -f run_cpp_executable
 
 echo $(pwd)
 # List of read_workload nput files to process
-pushd inputs/read_workload
-input_files=($(ls -1t ./read_workload_input*.txt | head -n $clients))
+pushd inputs/read_write_workload
+input_files=($(ls -1t ./read_write_workload_input*.txt | head -n $clients))
 echo "${input_files[@]}"
 popd
 
+echo $input_files
+# exit
 #  Run gnu-parallel
 pushd ./src/abd-algo/cmake/build
 

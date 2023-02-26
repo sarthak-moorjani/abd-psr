@@ -303,15 +303,10 @@ std::pair<time_t, int> ABDClient::WriteGetPhase(std::string key,
                 // cout << "write get rpc timed out" << endl;
             } else if(status.error_code() == grpc::StatusCode::NOT_FOUND) {
                 // cout << "write get phase key not found. Inserting " <<  key << endl;
-                for(int i=0;i<indices_to_del.size();i++){
-                    delete get_call->statuses[indices_to_del[i]];
-                    delete get_call->contexts[indices_to_del[i]];
-                    delete get_call->replies[indices_to_del[i]];
-                }
+            }
                   
-            }
-            }
-        }
+          }
+      }
 
     std::pair<time_t, int> max_ts;
     if(num_rpcs_finished_ok!=majority){
@@ -478,7 +473,7 @@ int main(int argc, char** argv) {
     return 0;
   }
 
-  string workload_input_filename  = "/users/"+user_name+"/abd-psr/inputs/read_workload/" +  workload_input_file;
+  string workload_input_filename  = "/users/"+user_name+"/abd-psr/inputs/read_write_workload/" +  workload_input_file;
    string workload_output_filename  = "/users/"+ user_name +"/abd-psr/outputs/" +  workload_output_file;
    cout << workload_input_filename << endl;
   ifstream myfile(workload_input_filename);
@@ -515,13 +510,15 @@ int main(int argc, char** argv) {
     //cout << operations[i].c_str() << keys[iter] << endl;
     if(strcmp(operations[i].c_str(),"get")==0){
         std::string val = abd_client.Read(keys[iter]);
+        //cout << "Get " << keys[iter] << endl;
         if (val.empty()) {
           //cout << "Key not found" << endl;
           iter++;
           continue;
         }
-        //cout << argv[1] << " Value " <<  val << endl;
+        //cout << " Value " <<  val << endl;
     }else if(strcmp(operations[i].c_str(),"put")==0){
+        //cout << "put " << keys[iter] << endl;
         abd_client.Write(keys[iter], values[iter]);
     }
     iter++;
