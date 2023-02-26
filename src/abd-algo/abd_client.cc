@@ -280,6 +280,7 @@ std::pair<time_t, int> ABDClient::WriteGetPhase(std::string key,
     int num_rpcs_finished = 0;
     int num_rpcs_finished_ok = 0;
     int majority = channels_.size()/2 + 1;
+    vector<size_t> indices_to_del;
     std::vector<std::pair<time_t,int>>timestamps;
     while (num_rpcs_finished < majority) {
         // cout << "RPC Finished:Majority" << num_rpcs_finished << " " << majority << endl;
@@ -290,7 +291,7 @@ std::pair<time_t, int> ABDClient::WriteGetPhase(std::string key,
         num_rpcs_finished++;
         const size_t which_backend = size_t(which_backend_ptr);
         const Status& status = *(get_call->statuses[which_backend]);
-
+        indices_to_del.push_back(which_backend);
         if (status.ok()) {
             // cout << "rpc ok" << endl;
             timestamps.emplace_back(make_pair(get_call->replies[num_rpcs_finished_ok]->timestamp(),get_call->replies[num_rpcs_finished_ok]->client_id()));
@@ -301,9 +302,15 @@ std::pair<time_t, int> ABDClient::WriteGetPhase(std::string key,
                 // cout << "write get rpc timed out" << endl;
             } else if(status.error_code() == grpc::StatusCode::NOT_FOUND) {
                 // cout << "write get phase key not found. Inserting " <<  key << endl;
+                for(int i=0;i<indices_to_del.size();i++){
+                    delete get_call->statuses[indices_to_del[i]];
+                    delete get_call->contexts[indices_to_del[i]];
+                    delete get_call->replies[indices_to_del[i]];
+                }
+                  
+            }
             }
         }
-    }
 
     std::pair<time_t, int> max_ts;
     if(num_rpcs_finished_ok!=majority){
@@ -319,6 +326,11 @@ std::pair<time_t, int> ABDClient::WriteGetPhase(std::string key,
     }
     // cout << max_ts.first << endl;
     // cout << "Write Get Done." << endl;
+    for(int i=0;i<indices_to_del.size();i++){
+        delete get_call->statuses[indices_to_del[i]];
+        delete get_call->contexts[indices_to_del[i]];
+        delete get_call->replies[indices_to_del[i]];
+    }
     return max_ts;
 }
 
@@ -365,7 +377,7 @@ void ABDClient::WriteSetPhase(std::string key, std::string value, int max_ts) {
     int num_rpcs_finished_ok = 0;
     bool newKey = false;
     int majority = this->channels_.size()/2 + 1;
-
+    vector<size_t>indices_to_del;
     while (num_rpcs_finished < majority) {
         void* which_backend_ptr;
         bool ok = false;
@@ -374,10 +386,12 @@ void ABDClient::WriteSetPhase(std::string key, std::string value, int max_ts) {
         num_rpcs_finished++;
         const size_t which_backend = size_t(which_backend_ptr);
         const Status& status = *(set_call->statuses[which_backend]);
+        indices_to_del.push_back(which_backend);
         // cout << "rpc #" << which_backend << " done after " << elapsed_ms(start_time) << "ms" << endl;
         if (status.ok()) {
             // cout << "rpc ok" << endl;
             num_rpcs_finished_ok++;
+            
         } else {
             if (status.error_code() == grpc::StatusCode::DEADLINE_EXCEEDED) {
                 cout << "write set rpc timed out" << endl;
@@ -385,6 +399,11 @@ void ABDClient::WriteSetPhase(std::string key, std::string value, int max_ts) {
                 cout << "write get phase key not found. Inserting " << key <<  endl;
             }
         }
+    }
+    for(int i=0;i<indices_to_del.size();i++){
+        delete set_call->statuses[indices_to_del[i]];
+        delete set_call->contexts[indices_to_del[i]];
+        delete set_call->replies[indices_to_del[i]];
     }
     // cout << "Write Set Done." << endl;
     // cout << set_call->stubs.size() << " rpcs attempted, " << num_rpcs_finished_ok << "/" << num_rpcs_finished << " rpcs finished ok" << endl;
