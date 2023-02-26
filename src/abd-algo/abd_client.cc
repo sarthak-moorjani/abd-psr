@@ -505,27 +505,37 @@ int main(int argc, char** argv) {
   }
   cout << operations.size() << " " << keys.size() << endl;
     int iter = 0;
-  auto start = std::chrono::high_resolution_clock::now();
+    ofstream get_file;
+    get_file.open("get_measurements.txt", std::ios::app);
+    ofstream put_file;
+    put_file.open("put_measurements.txt", std::ios::app);
   for (int i = 0; i < operations.size(); i++) {
     //cout << operations[i].c_str() << keys[iter] << endl;
     if(strcmp(operations[i].c_str(),"get")==0){
+        auto start = std::chrono::high_resolution_clock::now();
         std::string val = abd_client.Read(keys[iter]);
+        auto end = std::chrono::high_resolution_clock::now();
         //cout << "Get " << keys[iter] << endl;
-        if (val.empty()) {
+        if (!val.empty()) {
           //cout << "Key not found" << endl;
-          iter++;
-          continue;
+        auto elapsed = std::chrono::high_resolution_clock::now() - start;
+        long long microseconds = std::chrono::duration_cast<std::chrono::microseconds> (elapsed).count();
+        get_file << microseconds << std::endl;
         }
         //cout << " Value " <<  val << endl;
     }else if(strcmp(operations[i].c_str(),"put")==0){
         //cout << "put " << keys[iter] << endl;
+        auto start = std::chrono::high_resolution_clock::now();
         abd_client.Write(keys[iter], values[iter]);
+        auto end = std::chrono::high_resolution_clock::now();
+        auto elapsed = std::chrono::high_resolution_clock::now() - start;
+        long long microseconds = std::chrono::duration_cast<std::chrono::microseconds> (elapsed).count();
+        put_file << microseconds << std::endl;
     }
     iter++;
   }
-  auto elapsed = std::chrono::high_resolution_clock::now() - start;
-        long long microseconds = std::chrono::duration_cast<std::chrono::microseconds> (elapsed).count();
-      printf("Total Microseconds are %lld", microseconds);
+  
+      // printf("Total Microseconds are %lld", microseconds);
   // for read-workload
 
   // Check values
