@@ -6,7 +6,7 @@ if [ $# -lt 1 ]; then
 fi
 
 USER=$1
-declare -a nodes=("$USER@clnode288.clemson.cloudlab.us" "$USER@clnode315.clemson.cloudlab.us" "$USER@clnode294.clemson.cloudlab.us" "$USER@clnode304.clemson.cloudlab.us" "$USER@clnode303.clemson.cloudlab.us")
+declare -a nodes=("$USER@c220g2-011124.wisc.cloudlab.us" "$USER@c220g2-011118.wisc.cloudlab.us" "$USER@c220g2-011122.wisc.cloudlab.us" "$USER@c220g2-011119.wisc.cloudlab.us" "$USER@c220g2-011123.wisc.cloudlab.us")
 
 for i in "${nodes[@]}"
 do
