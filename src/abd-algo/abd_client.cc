@@ -93,6 +93,7 @@ std::pair<time_t, string> ABDClient::ReadGetPhase(std::string key, string& err) 
   std::vector<std::pair<time_t,string>>timestamps;
   std::pair<time_t, string> max_ts;
   cout << "sent all rpcs --" << endl;
+  vector<size_t> indices;
   while (num_rpcs_finished < majority) {
     void* which_backend_ptr;
     bool ok = false;
@@ -100,6 +101,7 @@ std::pair<time_t, string> ABDClient::ReadGetPhase(std::string key, string& err) 
     get_call->cq.Next(&which_backend_ptr, &ok);
     num_rpcs_finished++;
     const size_t which_backend = size_t(which_backend_ptr);
+    indices.push_back(which_backend);
     const Status& status = *(get_call->statuses[which_backend]);
 
     if (status.ok()) {
@@ -118,12 +120,6 @@ std::pair<time_t, string> ABDClient::ReadGetPhase(std::string key, string& err) 
           err = "KeyNotFound";
           cout << get_call->statuses.size() << " " << get_call->replies.size() << " "
       << get_call->contexts.size() << endl;
-          // for (int i = 0; i < get_call->statuses.size(); i++) {
-          //  delete get_call->statuses[i];
-          //  delete get_call->replies[i];
-          //  delete get_call->contexts[i];
-          //}
-          //delete get_call;
           delete get_call->statuses.at(which_backend);
           delete get_call->replies.at(which_backend);
           delete get_call->contexts.at(which_backend);
@@ -143,7 +139,12 @@ std::pair<time_t, string> ABDClient::ReadGetPhase(std::string key, string& err) 
     max_ts = *max_element(timestamps.begin(),timestamps.end(), comparator);
      cout << max_ts.second << endl;
      cout << "Read Get Done" << key << endl;
-    //cout << get_call->statuses.size() << " " << get_call->replies.size() << " "
+    for (int i = 0; i < indices.size(); i++) {
+      delete get_call->statuses.at(indices[i]);
+      delete get_call->replies.at(indices[i]);
+      delete get_call->contexts.at(indices[i]);
+    }
+     //cout << get_call->statuses.size() << " " << get_call->replies.size() << " "
     //  << get_call->contexts.size() << endl;
     // for (int i = 0; i < get_call->statuses.size(); i++) {
     //  delete get_call->statuses[i];
