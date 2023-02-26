@@ -63,12 +63,12 @@ class ABDClient {
 
     // Phase 1 for the read protocol. This method returns a
     // pair of the chosen value and the largest timestamp corresponding to it.
-    std::pair<time_t, string> ReadGetPhase(std::string key, char*err);
+    std::pair<time_t, string> ReadGetPhase(std::string key, string& err);
 
     // Phase 2 for the read protocol. This method just talks
     // to the replicas to set the current value. The value returned to the
     // client will always be 'v' as set by the GetPhase of the algorithm.
-    void ReadSetPhase(std::string key, std::string value, int max_ts, char *err);
+    void ReadSetPhase(std::string key, std::string value, int max_ts, string& err);
 
     // Write Interface for the algorithm.
     void Write(std::string key, std::string value);
