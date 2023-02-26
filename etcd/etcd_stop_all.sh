@@ -10,5 +10,5 @@ declare -a nodes=("$USER@clnode288.clemson.cloudlab.us" "$USER@clnode315.clemson
 
 for i in "${nodes[@]}"
 do
-    ssh -i ~/.ssh/id_ed25519 -t $i 'sudo systemctl daemon-reload && sudo systemctl enable etcd && sudo systemctl start etcd.service'
+    ssh -i ~/.ssh/id_ed25519 -t $i 'sudo systemctl stop etcd'
 done
