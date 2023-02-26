@@ -1,14 +1,18 @@
 # #!/bin/bash
 
-commands_file="input.txt"
+commands_file="etcd_inputs/read_write_workload/read_write_workload_input_${1}.txt"
 
 
 start_time=$(date +%s.%N)
 
-while read command; do
+n=10000
 
-  eval $command
-done < $commands_file
+
+head -$n $commands_file | bash
+
+
+# < "outputs_${1}.txt"
+
 
 
 end_time=$(date +%s.%N)
