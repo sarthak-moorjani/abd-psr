@@ -38,8 +38,8 @@ string ABDClient::Read(string key) {
 //   cout << "Read Get phase done" << endl;
 //   cout << p.first << " " << p.second << endl;
   if(err.size() == 0){
-    cout << key << " " << err.size() << err << endl;
-    cout << p.first << " " << p.second << endl;
+    //cout << key << " " << err.size() << err << endl;
+    //cout << p.first << " " << p.second << endl;
     ReadSetPhase(key, p.second, p.first, err);
     if(err.size() == 0){
         return p.second;
@@ -54,7 +54,7 @@ std::pair<time_t, string> ABDClient::ReadGetPhase(std::string key, string& err) 
   // This is phase 1 of the read protocol.
   // Add code below!
 
-  cout << "In Read Get" << endl;
+  //cout << "In Read Get" << endl;
   
   ABDClient::AsyncCall<abd_algo::ReadGetArg,abd_algo::ReadGetRet>* get_call =
     new ABDClient::AsyncCall<abd_algo::ReadGetArg,abd_algo::ReadGetRet>();
@@ -64,7 +64,7 @@ std::pair<time_t, string> ABDClient::ReadGetPhase(std::string key, string& err) 
   int counter = 0;
   for(it = channels_.begin();it!=channels_.end();it++){
     string replica = it->first;
-    cout << "Read get from " << replica << endl;
+    //cout << "Read get from " << replica << endl;
     std::shared_ptr<Channel> channel = it->second;
 
     const auto start_time = chrono::system_clock::now();
@@ -92,7 +92,7 @@ std::pair<time_t, string> ABDClient::ReadGetPhase(std::string key, string& err) 
   bool timeOut = false;
   std::vector<std::pair<time_t,string>>timestamps;
   std::pair<time_t, string> max_ts;
-  cout << "sent all rpcs --" << endl;
+  //cout << "sent all rpcs --" << endl;
   vector<size_t> indices;
   while (num_rpcs_finished < majority) {
     void* which_backend_ptr;
@@ -105,21 +105,21 @@ std::pair<time_t, string> ABDClient::ReadGetPhase(std::string key, string& err) 
     const Status& status = *(get_call->statuses[which_backend]);
 
     if (status.ok()) {
-      cout << "rpc ok" << endl;
+      //cout << "rpc ok" << endl;
       timestamps.emplace_back(make_pair(
         get_call->replies[num_rpcs_finished_ok]->timestamp(),
         get_call->replies[num_rpcs_finished_ok]->val()));
       // cout << "At read get ts = " << get_call->replies[num_rpcs_finished_ok]->timestamp() << "for key " << key << endl;
       num_rpcs_finished_ok++;
     } else {
-        cout << status.error_code() << endl;
+        // cout << status.error_code() << endl;
         if (status.error_code() == grpc::StatusCode::DEADLINE_EXCEEDED) {
           cout << "rpc timed out" << endl;
         } else if(status.error_code() == grpc::StatusCode::NOT_FOUND) {
-          cout << "read get phase - key not found. " << key << endl;
+          //cout << "read get phase - key not found. " << key << endl;
           err = "KeyNotFound";
-          cout << get_call->statuses.size() << " " << get_call->replies.size() << " "
-      << get_call->contexts.size() << endl;
+          //cout << get_call->statuses.size() << " " << get_call->replies.size() << " "
+      //<< get_call->contexts.size() << endl;
           delete get_call->statuses.at(which_backend);
           delete get_call->replies.at(which_backend);
           delete get_call->contexts.at(which_backend);
@@ -137,8 +137,8 @@ std::pair<time_t, string> ABDClient::ReadGetPhase(std::string key, string& err) 
         return p1.first < p2.first;
     };
     max_ts = *max_element(timestamps.begin(),timestamps.end(), comparator);
-     cout << max_ts.second << endl;
-     cout << "Read Get Done" << key << endl;
+     //cout << max_ts.second << endl;
+     //cout << "Read Get Done" << key << endl;
     for (int i = 0; i < indices.size(); i++) {
       delete get_call->statuses.at(indices[i]);
       delete get_call->replies.at(indices[i]);
@@ -161,7 +161,7 @@ std::pair<time_t, string> ABDClient::ReadGetPhase(std::string key, string& err) 
 void ABDClient::ReadSetPhase(std::string key, std::string value, int max_ts, string& err) {
   // This is phase 2 of the read protocol.
   // Add code below!
-  cout << "In Read Set" << endl;
+  //cout << "In Read Set" << endl;
   ABDClient::AsyncCall<abd_algo::ReadSetArg,abd_algo::ReadSetRet> * set_call =
     new ABDClient::AsyncCall<abd_algo::ReadSetArg,abd_algo::ReadSetRet>();
   abd_algo::ReadSetArg request;
@@ -395,9 +395,9 @@ void ABDClient::WriteSetPhase(std::string key, std::string value, int max_ts) {
             
         } else {
             if (status.error_code() == grpc::StatusCode::DEADLINE_EXCEEDED) {
-                cout << "write set rpc timed out" << endl;
+                //cout << "write set rpc timed out" << endl;
             } else if(status.error_code() == grpc::StatusCode::NOT_FOUND) {
-                cout << "write get phase key not found. Inserting " << key <<  endl;
+                //cout << "write get phase key not found. Inserting " << key <<  endl;
             }
         }
     }
@@ -471,27 +471,6 @@ int main(int argc, char** argv) {
   std::string workload_output_file = argv[3];
   std::string user_name = argv[4];
   ABDClient abd_client({"10.10.1.1:50052", "10.10.1.2:50052", "10.10.1.3:50052"});
-  // std::string arg_str("--target");
-  
-  // if (argc > 1) {
-  //   std::string arg_val = argv[1];
-  //   size_t start_pos = arg_val.find(arg_str);
-  //   if (start_pos != std::string::npos) {
-  //     start_pos += arg_str.size();
-  //     if (arg_val[start_pos] == '=') {
-  //       target_str = arg_val.substr(start_pos + 1);
-  //     } else {
-  //       std::cout << "The only correct argument syntax is --target="
-  //                 << std::endl;
-  //       return 0;
-  //     }
-  //   } else {
-  //     std::cout << "The only acceptable argument is --target=" << std::endl;
-  //     return 0;
-  //   }
-  // } else {
-  //   target_str = "localhost:50051";
-  // }
 
   if(is_initialise){
     if(!initialise(abd_client, user_name))
@@ -533,15 +512,15 @@ int main(int argc, char** argv) {
     int iter = 0;
   auto start = std::chrono::high_resolution_clock::now();
   for (int i = 0; i < operations.size(); i++) {
-    cout << operations[i].c_str() << keys[iter] << endl;
+    //cout << operations[i].c_str() << keys[iter] << endl;
     if(strcmp(operations[i].c_str(),"get")==0){
         std::string val = abd_client.Read(keys[iter]);
         if (val.empty()) {
-          cout << "Key not found" << endl;
+          //cout << "Key not found" << endl;
           iter++;
           continue;
         }
-        cout << argv[1] << " Value " <<  val << endl;
+        //cout << argv[1] << " Value " <<  val << endl;
     }else if(strcmp(operations[i].c_str(),"put")==0){
         abd_client.Write(keys[iter], values[iter]);
     }
