@@ -220,14 +220,6 @@ void ABDClient::ReadSetPhase(std::string key, std::string value, int max_ts, str
     delete set_call->contexts.at(which_backend);
   }
 
-  //cout << set_call->statuses.size() << " " << set_call->replies.size() << " "
-  //    << set_call->contexts.size() << endl;
-  //for (int i = 0; i < indices.size(); i++) {
-  //  delete set_call->statuses.at(indices[i]);
-  //  delete set_call->replies.at(indices[i]);
-  //  delete set_call->contexts.at(indices[i]);
-  //}
-  //delete set_call;
   // cout << "Read Set Done." << endl;
 }
 
@@ -411,7 +403,7 @@ bool initialise(ABDClient abd_client, string user_name) {
   vector<string> operations, keys, values;
   string line;
   cout << "Initialising the store with 1M values.." <<endl;
-  ifstream myfile("/users/"+user_name+"/abd-psr/inputs/input.txt");
+  ifstream myfile("/users/"+user_name+"/abd-psr/inputs/input100.txt");
   //int counter = 0;
   if (myfile.is_open())
   {
@@ -465,7 +457,11 @@ int main(int argc, char** argv) {
   std::string workload_input_file = argv[2];
   std::string workload_output_file = argv[3];
   std::string user_name = argv[4];
-  ABDClient abd_client({"10.10.1.1:50052", "10.10.1.2:50052", "10.10.1.3:50052"});
+  std::string server1 = argv[5];
+  std::string server2 = argv[6];
+  std::string server3 = argv[7];
+  cout << "servers are " << server1 << endl << server2 << endl << server3 << endl;
+  ABDClient abd_client({server1, server2, server3});
 
   if(is_initialise){
     if(!initialise(abd_client, user_name))
