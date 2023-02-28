@@ -13,15 +13,16 @@ The ABD quorum reads algorithm is commonly used in distributed systems to implem
 
 Steps to run the ABD algorithm:
 1. Set up your cloud lab cluster
-2. Clone the github repo
-3. Change you current working directory to abd-psr/scripts
-4. Run the following command:
+2. Ensure grpc is setup correctly (https://grpc.io/docs/languages/cpp/quickstart/)
+3. Clone the github repo
+4. Change you current working directory to abd-psr/scripts
+5. Run the following command:
 ```sh
 $ ./multiple_clients.sh <CloudlabUsername> <List of Replica IPs>
 ```
 ```sh
 Example
-./multiple_clients.sh bob 10.10.1.1:50052 10.10.1.2:50052 10.10.1.3:50052
+./multiple_clients.sh bob 10.10.1.1 10.10.1.2 10.10.1.3
 ```
 
 The scripts takes as arguments  3 server IPs (exclude the IP of the server you are currently running the script on). The script starts the replicas (that are the shared registers storing the <key,value>) on the 3 servers passed as arguments. The client (serving the requests) is started on the replica the script is run on. The number of clients can be configured in the script!
