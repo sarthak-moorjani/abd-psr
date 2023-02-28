@@ -441,7 +441,8 @@ bool initialise(ABDClient abd_client, string user_name) {
     iter++;
   }
 
-  cout << "Initialisation done!" <<endl;
+  //cout << "Initialisation done!" <<endl;
+  cout << "Number of puts " << operations.size() << endl;
   return true;
 }
 
@@ -463,13 +464,13 @@ int main(int argc, char** argv) {
   cout << "servers are " << server1 << endl << server2 << endl << server3 << endl;
   ABDClient abd_client({server1, server2, server3});
 
-  if(is_initialise){
+  if(is_initialise){ 
     if(!initialise(abd_client, user_name))
       cout << "Initialization failed" << endl;
     return 0;
   }
 
-  string workload_input_filename  = "/users/"+user_name+"/abd-psr/inputs/read_write_workload/" +  workload_input_file;
+  string workload_input_filename  = "/users/"+user_name+"/abd-psr/inputs/read_workload/" +  workload_input_file;
    string workload_output_filename  = "/users/"+ user_name +"/abd-psr/outputs/" +  workload_output_file;
    cout << workload_input_filename << endl;
   ifstream myfile(workload_input_filename);
@@ -499,15 +500,20 @@ int main(int argc, char** argv) {
   } else {
     cout << "cannot find " + workload_input_filename + " file, run the random_gen file in benchmark directory!" << endl;
   }
+  auto server_start = std::chrono::high_resolution_clock::now();
+  std::time_t end_time = std::chrono::system_clock::to_time_t(server_start);
   cout << operations.size() << " " << keys.size() << endl;
     int iter = 0;
     ofstream get_file;
     get_file.open("get_measurements.txt", std::ios::app);
     ofstream put_file;
     put_file.open("put_measurements.txt", std::ios::app);
+    int num_gets = 0;
+    int num_sets = 0;
   for (int i = 0; i < operations.size(); i++) {
     //cout << operations[i].c_str() << keys[iter] << endl;
     if(strcmp(operations[i].c_str(),"get")==0){
+        num_gets++;
         auto start = std::chrono::high_resolution_clock::now();
         std::string val = abd_client.Read(keys[iter]);
         auto end = std::chrono::high_resolution_clock::now();
@@ -520,6 +526,7 @@ int main(int argc, char** argv) {
         }
         //cout << " Value " <<  val << endl;
     }else if(strcmp(operations[i].c_str(),"put")==0){
+        num_sets++;
         //cout << "put " << keys[iter] << endl;
         auto start = std::chrono::high_resolution_clock::now();
         abd_client.Write(keys[iter], values[iter]);
@@ -530,10 +537,11 @@ int main(int argc, char** argv) {
     }
     iter++;
   }
-  
-      // printf("Total Microseconds are %lld", microseconds);
+  cout << "finished computation at " << std::ctime(&end_time) << endl;
+  cout << "Number of gets " << num_gets << endl;
+  cout << "Number of sets " << num_sets << endl;
   // for read-workload
-
+ 
   // Check values
   return 0;
 }
