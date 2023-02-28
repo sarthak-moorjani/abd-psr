@@ -9,3 +9,19 @@ For handling writes, the client sends a write request to all the nodes and waits
 The ABD algorithm can handle network partitions. When a network partition occurs, the nodes on either side of the partition can continue to operate independently, with each side having its own quorum. This ensures that the system can continue to function even in the presence of network failures.
 
 The ABD quorum reads algorithm is commonly used in distributed systems to implement shared registers, which are a fundamental building block for many distributed algorithms.
+
+
+Steps to run the ABD algorithm:
+1. Set up your cloud lab cluster
+2. Clone the github repo
+3. Change you current working directory to abd-psr/scripts
+4. Run the following command:
+```sh
+$ ./multiple_clients.sh <CloudlabUsername> <List of Replica IPs>
+```
+```sh
+Example
+./multiple_clients.sh bob 10.10.1.1:50052 10.10.1.2:50052 10.10.1.3:50052
+```
+
+The scripts takes as arguments  3 server IPs (exclude the IP of the server you are currently running the script on.)
