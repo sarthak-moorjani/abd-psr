@@ -20,7 +20,7 @@ SERVER3=$4
 sudo apt-get update
 sudo apt-get install parallel
 
-clients=16
+clients=8
 
 # change working directory from scripts
 pushd ../
