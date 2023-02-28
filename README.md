@@ -25,4 +25,4 @@ Example
 ./multiple_clients.sh bob 10.10.1.1 10.10.1.2 10.10.1.3
 ```
 
-The scripts takes as arguments  3 server IPs (exclude the IP of the server you are currently running the script on). The script starts the replicas (that are the shared registers storing the <key,value>) on the 3 servers passed as arguments. The client (serving the requests) is started on the replica the script is run on. The number of clients can be configured in the script!
+The scripts takes as arguments  3 server IPs (exclude the IP of the server you are currently running the script on). The script starts the replicas (that are the shared registers storing the <key,value>) on the 3 servers passed as arguments. The client (serving the requests) is started on the replica the script is run on. The number of clients can be configured in the script! The script takes care of killing all of the processes that were started on each server.
